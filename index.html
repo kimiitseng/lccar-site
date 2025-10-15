@@ -296,6 +296,12 @@
 
   <!-- ===================== Firebase：請填入你的專案設定 ===================== -->
   <script type="module">
+    import {
+  getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
+  fetchSignInMethodsForEmail
+} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+
     // ========= 你的 Firebase 設定 =========
     const firebaseConfig = {
       apiKey: "AIzaSyA5wkBK3b_-6on4QkYzfKLrpCJu6JN5Pzo",
@@ -342,31 +348,63 @@
     }
 
     async function emailLoginOrRegister(email, pass){
-      try{
-        // 先嘗試登入
-        await signInWithEmailAndPassword(auth, email, pass);
-        return 'login';
-      }catch(err){
-        if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-          throw new Error('密碼不正確。若忘記密碼，請點下方「忘記密碼」。');
-        }
-        if (err.code === 'auth/user-not-found') {
-          // 帳號不存在 → 自動註冊
-          await createUserWithEmailAndPassword(auth, email, pass);
-          return 'register';
-        }
-        if (err.code === 'auth/too-many-requests') {
-          throw new Error('嘗試次數過多，請稍後再試或改用 Google 登入。');
-        }
-        if (err.code === 'auth/invalid-email') {
-          throw new Error('Email 格式不正確。');
-        }
-        if (err.code === 'auth/email-already-in-use') {
-          throw new Error('此 Email 已被使用。若你曾用 Google 登入，請改用「Google 登入」。');
-        }
-        throw new Error(err.message || '登入失敗');
+  // 基本檢查
+  if (!email) throw new Error('請先輸入 Email');
+  if (!pass || pass.length < 6) throw new Error('密碼至少需 6 碼');
+
+  // 先查這個 Email 綁了哪些登入方式
+  let methods = [];
+  try {
+    methods = await fetchSignInMethodsForEmail(auth, email);
+    // methods 可能是：[]、['password']、['google.com']、或多個
+  } catch (err) {
+    console.error('[fetchSignInMethodsForEmail]', err);
+    throw new Error('查詢帳號狀態失敗，請稍後再試。');
+  }
+
+  // 1) 完全沒有註冊過 → 直接幫他註冊成「Email/密碼」
+  if (methods.length === 0) {
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+      return 'register';
+    } catch (err) {
+      console.error('[register]', err);
+      if (err.code === 'auth/weak-password') throw new Error('密碼太短，請至少 6 碼。');
+      if (err.code === 'auth/email-already-in-use') {
+        // 極少數 race condition（剛好別處註冊成功）
+        // 退回去用登入流程
+        methods = ['password'];
+      } else {
+        throw new Error(err.message || '註冊失敗');
       }
     }
+  }
+
+  // 2) 已經綁「Email/密碼」→ 走登入
+  if (methods.includes('password')) {
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      return 'login';
+    } catch (err) {
+      console.error('[login]', err);
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        throw new Error('密碼不正確。若忘記密碼，請點下方「忘記密碼」。');
+      }
+      if (err.code === 'auth/too-many-requests') {
+        throw new Error('嘗試過多，請稍後再試或改用 Google 登入。');
+      }
+      throw new Error(err.message || '登入失敗');
+    }
+  }
+
+  // 3) 沒有 password，但綁了 Google（或其他）→ 提示改用對應方式
+  if (methods.includes('google.com')) {
+    throw new Error('此 Email 曾用 Google 註冊，請改用「以 Google 登入」。');
+  }
+
+  // 其他第三方（很少見）
+  throw new Error('此 Email 已綁定其他登入方式：' + methods.join(', '));
+}
 
     // Google 登入/登出
     document.querySelector('#btn-google').addEventListener('click', signInWithGoogle);
