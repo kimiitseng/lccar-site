@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>良晨即時｜官方網站</title>
+  <meta name="description" content="良晨即時｜機場接送與專業用車服務。線上預約、會員登入、即時通知。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23000000'/%3E%3Ctext x='50' y='58' font-size='44' text-anchor='middle' fill='white' font-family='Arial' %3ELC%3C/text%3E%3C/svg%3E"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{--brand:#0f172a} /* slate-900 */
+    .glass{backdrop-filter: blur(10px); background: rgba(255,255,255,.08)}
+    .card{border-radius:1rem; box-shadow:0 10px 25px rgba(0,0,0,.1)}
+    .section{scroll-margin-top:96px}
+    .hidden-important{display:none !important}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <!-- ===================== 導覽列 ===================== -->
+  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b">
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+      <a href="#" class="font-bold text-xl tracking-wide">良晨即時</a>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#home" class="hover:text-slate-700">首頁</a>
+        <a href="#services" class="hover:text-slate-700">服務</a>
+        <a href="#team" class="hover:text-slate-700">團隊</a>
+        <a href="#booking" class="hover:text-slate-700">線上預約</a>
+        <a href="#member" class="hover:text-slate-700">會員中心</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button id="btn-google" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-sm">Google 登入</button>
+        <button id="btn-logout" class="px-3 py-1.5 rounded-lg border text-sm hidden">登出</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== 首頁 Hero ===================== -->
+  <section id="home" class="section relative">
+    <div class="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h1 class="text-3xl md:text-5xl font-extrabold leading-tight">機場接送・企業用車<br/>準時、安心、專業</h1>
+        <p class="mt-4 text-slate-600">良晨即時 — 以專業司機與即時客服支援，提供台灣各地機場與市區接送服務。支援線上預約與會員管理。</p>
+        <div class="mt-6 flex gap-3">
+          <a href="#booking" class="px-5 py-3 rounded-xl bg-slate-900 text-white">立即預約</a>
+          <a href="#services" class="px-5 py-3 rounded-xl border">了解服務</a>
+        </div>
+      </div>
+      <div class="relative">
+        <div class="card bg-white p-6">
+          <img alt="car" class="rounded-xl" src="https://images.unsplash.com/photo-1549923746-c502d488b3ea?q=80&w=1600&auto=format&fit=crop"/>
+          <p class="text-xs text-slate-500 mt-2">示意圖，實車以現場為準</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 服務區塊 ===================== -->
+  <section id="services" class="section bg-white border-t">
+    <div class="max-w-6xl mx-auto px-4 py-16">
+      <h2 class="text-2xl md:text-3xl font-bold">服務項目</h2>
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <div class="card bg-white p-6 border">
+          <h3 class="font-semibold text-lg">機場接送</h3>
+          <p class="mt-2 text-slate-600 text-sm">桃園／松山／高雄機場提供點到點接送，支援加購兒童安全座椅。</p>
+        </div>
+        <div class="card bg-white p-6 border">
+          <h3 class="font-semibold text-lg">商務包車</h3>
+          <p class="mt-2 text-slate-600 text-sm">半日／整日彈性時段，專屬司機貼身服務，支援多點行程。</p>
+        </div>
+        <div class="card bg-white p-6 border">
+          <h3 class="font-semibold text-lg">長途接駁</h3>
+          <p class="mt-2 text-slate-600 text-sm">跨縣市點對點，提供舒適寬敞座位與行李空間。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 團隊 ===================== -->
+  <section id="team" class="section">
+    <div class="max-w-6xl mx-auto px-4 py-16">
+      <h2 class="text-2xl md:text-3xl font-bold">團隊介紹</h2>
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <div class="card bg-white p-6 border">
+          <img class="w-full h-40 object-cover rounded-lg" src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=1600&auto=format&fit=crop" alt="team" />
+          <h3 class="mt-4 font-semibold">良晨即時客服</h3>
+          <p class="text-sm text-slate-600">Line ID：@lc.car｜電話：0911-808-897</p>
+        </div>
+        <div class="card bg-white p-6 border">
+          <img class="w-full h-40 object-cover rounded-lg" src="https://images.unsplash.com/photo-1509099836639-18ba1795216d?q=80&w=1600&auto=format&fit=crop" alt="driver" />
+          <h3 class="mt-4 font-semibold">專業司機夥伴</h3>
+          <p class="text-sm text-slate-600">10+ 年經驗，熟稔各大機場動線與即時航班資訊。</p>
+        </div>
+        <div class="card bg-white p-6 border">
+          <img class="w-full h-40 object-cover rounded-lg" src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=1600&auto=format&fit=crop" alt="vehicle" />
+          <h3 class="mt-4 font-semibold">安全舒適車輛</h3>
+          <p class="text-sm text-slate-600">定期保養、完整保險與行車紀錄，乘坐安心。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 線上預約 ===================== -->
+  <section id="booking" class="section bg-white border-t">
+    <div class="max-w-6xl mx-auto px-4 py-16">
+      <h2 class="text-2xl md:text-3xl font-bold">線上預約</h2>
+      <p class="mt-2 text-slate-600">登入後可快速帶入聯絡資訊。送出同時會寫入資料庫並透過 Webhook 立即通知客服（LINE 或其他）。</p>
+
+      <form id="bookingForm" class="mt-8 grid md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-xl border">
+        <div>
+          <label class="block text-sm font-medium">姓名</label>
+          <input id="bk_name" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="王小明" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">手機</label>
+          <input id="bk_phone" required pattern="[0-9-\+]{8,}" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="0912-345-678" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">日期時間</label>
+          <input id="bk_datetime" type="datetime-local" required class="mt-1 w-full border rounded-lg px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">人數</label>
+          <input id="bk_pax" type="number" min="1" max="8" value="1" class="mt-1 w-full border rounded-lg px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">上車地點</label>
+          <input id="bk_from" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="桃園市中壢區…" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">下車地點</label>
+          <input id="bk_to" required class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="桃園機場第一航廈" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium">備註</label>
+          <textarea id="bk_note" rows="3" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="需要兒童座椅…"></textarea>
+        </div>
+        <div class="md:col-span-2 flex items-center gap-3">
+          <button class="px-5 py-3 rounded-xl bg-slate-900 text-white" type="submit">送出預約</button>
+          <span id="bk_status" class="text-sm text-slate-600"></span>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== 會員中心 ===================== -->
+  <section id="member" class="section">
+    <div class="max-w-6xl mx-auto px-4 py-16">
+      <h2 class="text-2xl md:text-3xl font-bold">會員中心</h2>
+      <p class="mt-2 text-slate-600">登入後可管理個人資料，預約時自動帶入姓名與電話。</p>
+
+      <div id="authBox" class="mt-6 p-6 border rounded-xl bg-white card">
+        <div id="authed" class="hidden-important">$1
+
+          <!-- 歷次訂單 -->
+          <div id="ordersBox" class="mt-8">$1</div>
+
+          <!-- 司機 / 後台管理 -->
+          <div id="roleBoxes" class="mt-10 space-y-10">
+            <!-- 司機視窗：顯示被指派的行程 -->
+            <div id="driverBox" class="hidden-important">
+              <h3 class="font-semibold mb-2">我被指派的行程</h3>
+              <div class="overflow-x-auto border rounded-lg">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-slate-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left">日期時間</th>
+                      <th class="px-3 py-2 text-left">行程</th>
+                      <th class="px-3 py-2 text-left">乘客</th>
+                      <th class="px-3 py-2 text-left">人數</th>
+                      <th class="px-3 py-2 text-left">備註</th>
+                    </tr>
+                  </thead>
+                  <tbody id="driverJobsBody">
+                    <tr><td colspan="5" class="px-3 py-4 text-slate-500">目前沒有被指派的行程。</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 管理員後台：指派與外部訂單匯入 -->
+            <div id="adminBox" class="hidden-important">
+              <h3 class="font-semibold mb-2">管理員後台</h3>
+              <p class="text-sm text-slate-600">你可以：A) 指派既有訂單給司機、B) 匯入非官網訂單。</p>
+
+              <!-- A) 指派既有訂單 -->
+              <div class="mt-4 p-4 border rounded-lg bg-slate-50">
+                <h4 class="font-semibold">指派既有訂單</h4>
+                <p class="text-xs text-slate-500 mb-3">顯示最近 50 筆訂單，選擇司機後即可指派。</p>
+                <div class="overflow-x-auto border rounded-lg">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-slate-100">
+                      <tr>
+                        <th class="px-3 py-2 text-left">建立時間</th>
+                        <th class="px-3 py-2 text-left">行程</th>
+                        <th class="px-3 py-2 text-left">乘客</th>
+                        <th class="px-3 py-2 text-left">人數</th>
+                        <th class="px-3 py-2 text-left">指派給</th>
+                        <th class="px-3 py-2 text-left">狀態</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminAssignBody">
+                      <tr><td colspan="6" class="px-3 py-4 text-slate-500">讀取中…</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- B) 匯入外部訂單（非官網） -->
+              <div class="mt-6 p-4 border rounded-lg bg-slate-50">
+                <h4 class="font-semibold">匯入外部訂單</h4>
+                <form id="importForm" class="grid md:grid-cols-2 gap-4">
+                  <input id="im_name" class="border rounded-lg px-3 py-2" placeholder="乘客姓名" required />
+                  <input id="im_phone" class="border rounded-lg px-3 py-2" placeholder="手機" required />
+                  <input id="im_datetime" type="datetime-local" class="border rounded-lg px-3 py-2" required />
+                  <input id="im_pax" type="number" min="1" value="1" class="border rounded-lg px-3 py-2" />
+                  <input id="im_from" class="border rounded-lg px-3 py-2" placeholder="上車地點" required />
+                  <input id="im_to" class="border rounded-lg px-3 py-2" placeholder="下車地點" required />
+                  <select id="im_driver" class="border rounded-lg px-3 py-2 md:col-span-2"></select>
+                  <textarea id="im_note" rows="2" class="border rounded-lg px-3 py-2 md:col-span-2" placeholder="備註"></textarea>
+                  <div class="md:col-span-2 flex items-center gap-3">
+                    <button class="px-4 py-2 rounded-lg bg-slate-900 text-white" type="submit">建立並指派</button>
+                    <span id="im_status" class="text-sm text-slate-600"></span>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="anon">
+          <p class="text-sm text-slate-600">未登入狀態：可瀏覽網站，登入後即可建立會員資料與快速預約。</p>
+          <div class="mt-4 grid md:grid-cols-2 gap-4">
+            <form id="emailLoginForm" class="p-4 border rounded-lg bg-slate-50">
+              <h3 class="font-semibold">Email 登入/註冊</h3>
+              <input id="em_email" type="email" required class="mt-2 w-full border rounded-lg px-3 py-2" placeholder="you@example.com" />
+              <input id="em_pass" type="password" required class="mt-2 w-full border rounded-lg px-3 py-2" placeholder="密碼（新用戶會自動建立）" />
+              <button class="mt-3 px-4 py-2 rounded-lg bg-slate-900 text-white" type="submit">登入 / 註冊</button>
+              <p id="em_status" class="text-sm mt-2"></p>
+            </form>
+            <div class="p-4 border rounded-lg bg-slate-50">
+              <h3 class="font-semibold">其他方式</h3>
+              <button id="btn-google-2" class="mt-2 px-4 py-2 rounded-lg border w-full">以 Google 登入</button>
+              <p class="text-xs text-slate-500 mt-2">登入成功後，請到「會員中心」補充姓名與手機。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t bg-white">
+    <div class="max-w-6xl mx-auto px-4 py-10 text-sm text-slate-600">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <p>© <span id="year"></span> 良晨即時｜Line：@lc.car｜電話：0911-808-897</p>
+        <p class="text-xs">本網站使用 Firebase 儲存會員資料；送出預約即代表同意我們的隱私權政策。</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================== Firebase：請填入你的專案設定 ===================== -->
+  <script type="module">
+    // 1) 將以下 config 替換為你的 Firebase 專案設定
+    //    取得方式：Firebase Console → 專案設定 → 一般 → 你的應用程式（Web）
+    const firebaseConfig = {
+      apiKey: "__YOUR_API_KEY__",
+      authDomain: "__YOUR_PROJECT_ID__.firebaseapp.com",
+      projectId: "__YOUR_PROJECT_ID__",
+      storageBucket: "__YOUR_PROJECT_ID__.appspot.com",
+      messagingSenderId: "__YOUR_SENDER_ID__",
+      appId: "__YOUR_APP_ID__",
+    };
+
+    // 2) Make (Integromat) Webhook：用來即時通知 LINE 或其他系統
+    //    將下列 URL 改成你的 Make Webhook 位址（例如：https://hook.eu1.make.com/xxxxxxx）
+    const MAKE_WEBHOOK_URL = "__YOUR_MAKE_WEBHOOK_URL__";
+
+    // ========== Firebase SDK 初始化 ==========
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, addDoc, collection, query, where, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ========== DOM 快捷 ==========
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    // 年份
+    $('#year').textContent = new Date().getFullYear();
+
+    // 顯示/隱藏
+    function show(el){ el.classList.remove('hidden-important'); }
+    function hide(el){ el.classList.add('hidden-important'); }
+
+    // ========== 登入邏輯 ==========
+    async function signInWithGoogle(){
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+      } catch (e){ alert(e.message); }
+    }
+
+    async function emailLoginOrRegister(email, pass){
+      try{
+        // 先嘗試登入，失敗再註冊
+        await signInWithEmailAndPassword(auth, email, pass);
+        return 'login';
+      }catch(err){
+        if(err.code === 'auth/user-not-found'){
+          await createUserWithEmailAndPassword(auth, email, pass);
+          return 'register';
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    $('#btn-google').addEventListener('click', signInWithGoogle);
+    $('#btn-google-2').addEventListener('click', signInWithGoogle);
+    $('#btn-logout').addEventListener('click', ()=>signOut(auth));
+
+    $('#emailLoginForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const email = $('#em_email').value.trim();
+      const pass  = $('#em_pass').value.trim();
+      const s = $('#em_status'); s.textContent = '處理中…';
+      try{
+        const mode = await emailLoginOrRegister(email, pass);
+        s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
+      }catch(err){ s.textContent = err.message; }
+    });
+
+    onAuthStateChanged(auth, async (user)=>{
+      const authed = $('#authed');
+      const anon   = $('#anon');
+      const logout = $('#btn-logout');
+      const adminBox = document.querySelector('#adminBox');
+      const driverBox = document.querySelector('#driverBox');
+      if(user){
+        $('#userEmail').textContent = user.email || '(未提供)';
+        show(authed); hide(anon); logout.classList.remove('hidden');
+        // 讀取角色與個資
+        const profRef = doc(db, 'members', user.uid);
+        const profSnap = await getDoc(profRef);
+        let role = 'member';
+        if(profSnap.exists()){
+          const d = profSnap.data();
+          role = d.role || 'member';
+          $('#pf_name').value  = d.name  || '';
+          $('#pf_phone').value = d.phone || '';
+          $('#bk_name').value  = d.name  || '';
+          $('#bk_phone').value = d.phone || '';
+        }
+        // 顯示角色視圖
+        hide(adminBox); hide(driverBox);
+        if(role === 'admin'){
+          show(adminBox);
+          await Promise.all([loadDrivers(), renderBookingsForAdmin()]);
+        } else if(role === 'driver'){
+          show(driverBox);
+          await renderJobsForDriver(user.uid);
+        }
+        // 會員歷史訂單
+        await loadBookings(user.uid);
+      } else {
+        hide($('#authed')); show($('#anon')); logout.classList.add('hidden');
+        if(adminBox) hide(adminBox); if(driverBox) hide(driverBox);
+        const body = document.querySelector('#ordersBody');
+        if(body){ body.innerHTML = '<tr id="ordersEmpty"><td colspan="4" class="px-3 py-4 text-slate-500">目前沒有訂單資料。</td></tr>'; }
+      }
+    });
+
+    // 儲存會員資料
+    $('#profileForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const user = auth.currentUser; if(!user){ return alert('請先登入'); }
+      const payload = {
+        name:  $('#pf_name').value.trim(),
+        phone: $('#pf_phone').value.trim(),
+        updatedAt: serverTimestamp(),
+        email: user.email || null,
+        uid: user.uid,
+      };
+      const s = $('#pf_status'); s.textContent = '儲存中…';
+      try{
+        await setDoc(doc(db,'members',user.uid), payload, { merge:true });
+        s.textContent = '已儲存';
+        // 同步到預約表單欄位
+        $('#bk_name').value  = payload.name;
+        $('#bk_phone').value = payload.phone;
+      }catch(err){ s.textContent = err.message; }
+    });
+
+    // ========== 預約送出 ==========
+    $('#bookingForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const user = auth.currentUser; // 可選
+      const booking = {
+        name: $('#bk_name').value.trim(),
+        phone: $('#bk_phone').value.trim(),
+        datetime: $('#bk_datetime').value,
+        pax: Number($('#bk_pax').value||1),
+        from: $('#bk_from').value.trim(),
+        to: $('#bk_to').value.trim(),
+        note: $('#bk_note').value.trim(),
+        uid: user? user.uid : null,
+        email: user? (user.email||null) : null,
+        createdAt: serverTimestamp(),
+        source: 'lc-site'
+      };
+
+      // 前端驗證
+      if(!booking.name || !booking.phone || !booking.datetime || !booking.from || !booking.to){
+        return alert('請完整填寫必填欄位');
+      }
+
+      const status = $('#bk_status');
+      status.textContent = '送出中…';
+
+      try{
+        // 1) 寫入 Firestore（bookings 集合）
+        await addDoc(collection(db,'bookings'), booking);
+
+        // 2) 透過 Make Webhook 即時通知（可串 LINE 群組）
+        if(MAKE_WEBHOOK_URL && MAKE_WEBHOOK_URL.startsWith('http')){
+          const res = await fetch(MAKE_WEBHOOK_URL, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            body: JSON.stringify(booking)
+          });
+          if(!res.ok){ console.warn('Webhook 回應非 2xx', res.status); }
+        }
+
+        status.textContent = '預約已送出，我們將盡快與您聯繫。';
+        (e.target).reset();
+      }catch(err){
+        console.error(err);
+        status.textContent = '送出失敗：' + err.message;
+      }
+    });
+  // ========== 角色／資料查詢函式 ==========
+    async function loadDrivers(){
+      const sel = document.querySelector('#im_driver');
+      const assignSelects = document.querySelectorAll('.assignDriverSelect');
+      if(sel) sel.innerHTML = '';
+      const qy = query(collection(db,'members'), where('role','==','driver'), orderBy('name'));
+      const snap = await getDocs(qy);
+      const drivers = [];
+      snap.forEach(d=>{ drivers.push({ uid:d.id, ...d.data() }); });
+      // 填入匯入表單選單
+      if(sel){
+        sel.appendChild(new Option('（可選）指派司機',''));
+        drivers.forEach(dr=> sel.appendChild(new Option(`${dr.name||dr.email||dr.uid}`, dr.uid)) );
+      }
+      // 同步到管理指派區塊會動態建立
+      window.__drivers = drivers;
+      return drivers;
+    }
+
+    // ========== 查詢登入者的訂單 ==========
+    function formatDate(ts){
+      if(!ts) return '';
+      try{
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        const pad = (n)=> String(n).padStart(2,'0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }catch{ return ''; }
+    }
+
+    async function loadBookings(uid){
+      const body = document.querySelector('#ordersBody');
+      if(!body) return;
+      body.innerHTML = '<tr><td colspan="4" class="px-3 py-4 text-slate-500">讀取中…</td></tr>';
+      try{
+        const q = query(
+          collection(db,'bookings'),
+          where('uid','==', uid),
+          orderBy('createdAt','desc'),
+          limit(50)
+        );
+        const snap = await getDocs(q);
+        if(snap.empty){
+          body.innerHTML = '<tr id="ordersEmpty"><td colspan="4" class="px-3 py-4 text-slate-500">目前沒有訂單資料。</td></tr>';
+          return;
+        }
+        let rows = '';
+        snap.forEach(docu=>{
+          const b = docu.data();
+          const when = formatDate(b.createdAt);
+          const route = `${b.from||''} → ${b.to||''}`;
+          rows += `<tr class=\"border-t\">
+            <td class=\"px-3 py-2 whitespace-nowrap\">${when}</td>
+            <td class=\"px-3 py-2\">${route}</td>
+            <td class=\"px-3 py-2\">${b.pax||''}</td>
+            <td class=\"px-3 py-2 truncate max-w-[24ch]\" title=\"${b.note||''}\">${b.note||''}</td>
+          </tr>`;
+        });
+        body.innerHTML = rows;
+      }catch(err){
+        console.error(err);
+        body.innerHTML = `<tr><td colspan=\"4\" class=\"px-3 py-4 text-rose-600\">讀取失敗：${err.message}<br/><span class='text-xs text-slate-500'>若提示索引（index）需求，請依 Firestore 主控台連結建立複合索引：條件 uid==，排序 createdAt desc。</span></td></tr>`;
+      }
+    }
+  // ========== 司機端：載入被指派的行程 ==========
+    async function renderJobsForDriver(uid){
+      const body = document.querySelector('#driverJobsBody');
+      if(!body) return;
+      body.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-slate-500">讀取中…</td></tr>';
+      try{
+        const qy = query(
+          collection(db,'bookings'),
+          where('assignedDriverUid','==', uid),
+          orderBy('datetime','asc'),
+          limit(100)
+        );
+        const snap = await getDocs(qy);
+        if(snap.empty){ body.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-slate-500">目前沒有被指派的行程。</td></tr>'; return; }
+        let rows = '';
+        snap.forEach(docu=>{
+          const b = docu.data();
+          rows += `<tr class=\"border-t\">
+            <td class=\"px-3 py-2 whitespace-nowrap\">${b.datetime||''}</td>
+            <td class=\"px-3 py-2\">${(b.from||'') + ' → ' + (b.to||'')}</td>
+            <td class=\"px-3 py-2\">${b.name||''} / ${b.phone||''}</td>
+            <td class=\"px-3 py-2\">${b.pax||''}</td>
+            <td class=\"px-3 py-2 truncate max-w-[24ch]\" title=\"${b.note||''}\">${b.note||''}</td>
+          </tr>`;
+        });
+        body.innerHTML = rows;
+      }catch(err){
+        console.error(err);
+        body.innerHTML = `<tr><td colspan=\"5\" class=\"px-3 py-4 text-rose-600\">讀取失敗：${err.message}</td></tr>`;
+      }
+    }
+
+    // ========== 管理端：渲染可指派清單 ==========
+    async function renderBookingsForAdmin(){
+      const body = document.querySelector('#adminAssignBody');
+      if(!body) return;
+      body.innerHTML = '<tr><td colspan="6" class="px-3 py-4 text-slate-500">讀取中…</td></tr>';
+      try{
+        const qy = query(collection(db,'bookings'), orderBy('createdAt','desc'), limit(50));
+        const snap = await getDocs(qy);
+        if(snap.empty){ body.innerHTML = '<tr><td colspan="6" class="px-3 py-4 text-slate-500">目前沒有訂單。</td></tr>'; return; }
+        const drivers = window.__drivers || await loadDrivers();
+        let rows = '';
+        snap.forEach(docu=>{
+          const b = docu.data();
+          const id = docu.id;
+          const when = (b.createdAt && b.createdAt.toDate) ? b.createdAt.toDate().toLocaleString() : '';
+          const current = b.assignedDriverUid || '';
+          const options = ['<option value="">未指派</option>'].concat(drivers.map(dr=>`<option value="${dr.uid}" ${current===dr.uid?'selected':''}>${dr.name||dr.email||dr.uid}</option>`)).join('');
+          rows += `<tr class=\"border-t\">
+            <td class=\"px-3 py-2\">${when}</td>
+            <td class=\"px-3 py-2\">${(b.from||'') + ' → ' + (b.to||'')}</td>
+            <td class=\"px-3 py-2\">${b.name||''} / ${b.phone||''}</td>
+            <td class=\"px-3 py-2\">${b.pax||''}</td>
+            <td class=\"px-3 py-2\"><select class=\"assignSel border rounded px-2 py-1\" data-id=\"${id}\">${options}</select></td>
+            <td class=\"px-3 py-2\">${b.status||'—'}</td>
+          </tr>`;
+        });
+        body.innerHTML = rows;
+        // 綁定事件
+        body.querySelectorAll('.assignSel').forEach(sel=>{
+          sel.addEventListener('change', async (e)=>{
+            const id = e.target.getAttribute('data-id');
+            const val = e.target.value || null;
+            try{ await updateDoc(doc(db,'bookings',id), { assignedDriverUid: val }); }
+            catch(err){ alert('指派失敗：'+err.message); }
+          });
+        });
+      }catch(err){
+        console.error(err);
+        body.innerHTML = `<tr><td colspan=\"6\" class=\"px-3 py-4 text-rose-600\">讀取失敗：${err.message}</td></tr>`;
+      }
+    }
+
+    // ========== 管理端：匯入外部訂單 ==========
+    document.addEventListener('submit', async (e)=>{
+      if(e.target && e.target.id === 'importForm'){
+        e.preventDefault();
+        const user = auth.currentUser;
+        if(!user){ return alert('請先以管理員帳號登入'); }
+        const booking = {
+          name: document.querySelector('#im_name').value.trim(),
+          phone: document.querySelector('#im_phone').value.trim(),
+          datetime: document.querySelector('#im_datetime').value,
+          pax: Number(document.querySelector('#im_pax').value||1),
+          from: document.querySelector('#im_from').value.trim(),
+          to: document.querySelector('#im_to').value.trim(),
+          note: document.querySelector('#im_note').value.trim(),
+          assignedDriverUid: document.querySelector('#im_driver').value || null,
+          uid: null, // 非官網下單，不綁會員
+          email: null,
+          createdAt: serverTimestamp(),
+          source: 'offline-import'
+        };
+        const s = document.querySelector('#im_status'); s.textContent = '建立中…';
+        try{
+          await addDoc(collection(db,'bookings'), booking);
+          s.textContent = '已建立並指派';
+          (e.target).reset();
+          await renderBookingsForAdmin();
+        }catch(err){ s.textContent = '失敗：'+err.message; }
+      }
+    });
+  </script>
+
+  <!-- ===================== 使用說明（部署前請閱讀） =====================
+  1) Firebase 設定
+     - 到 https://console.firebase.google.com 建立專案
+     - 建立 Web App 並複製設定，貼到上方 firebaseConfig
+     - 啟用 Authentication：Email/Password 及 Google Provider
+     - 建立 Cloud Firestore（Production 模式）並新增下列安全規則：
+
+       	// Firestore 規則（請到 Console > Firestore > 規則 貼上）
+        rules_version = '2';
+        service cloud.firestore { match /databases/{database}/documents {
+          function isAdmin(){
+            return request.auth != null &&
+                   get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'admin';
+          }
+       	  match /members/{uid} {
+       	    allow read, write: if request.auth != null && request.auth.uid == uid;
+       	  }
+       	  match /bookings/{id} {
+       	    allow create: if true; // 允許匿名送單（可改為 request.auth != null）
+        // 僅允許讀取：自己的會員單、被指派給自己的單、或管理員
+        allow read: if (request.auth != null && (resource.data.uid == request.auth.uid || resource.data.assignedDriverUid == request.auth.uid)) ||
+                     isAdmin();
+        // 允許管理員更新（例如指派司機、更新狀態），或司機更新自己的回報欄位
+        allow update: if isAdmin() || (request.auth != null && resource.data.assignedDriverUid == request.auth.uid);
+        allow delete: if false; // 預設不允許前端更改／刪除
+       	  }
+       	}}
+
+  2) 即時通知（Make → LINE 群組）
+     - 在 Make 建立「Custom webhook」模組，複製 URL 貼到 MAKE_WEBHOOK_URL
+     - 後面串 LINE Messaging API「發送訊息」模組（用你現有的 Channel access token）
+     - 訊息內容範例：
+       {
+         "to": "<你的群組ID或使用 push/broadcast 模組>",
+         "messages": [
+           { "type": "text", "text":
+             "[新預約] " + bundle.name + " / " + bundle.phone + "\n" +
+             bundle.datetime + "\n" + bundle.from + " → " + bundle.to +
+             (bundle.note ? ("\n備註："+bundle.note) : "")
+           }
+         ]
+       }
+     - 或直接在 Make 裡組字串：只顯示有值的欄位（你之前的場景可沿用）
+
+  3) 部署到 GitHub Pages（免費）
+     - 到 GitHub 建立 Repository，例如 liangchen-site
+     - 新增檔案 index.html（本檔案全部貼上）
+     - 進入 Settings → Pages → Branch 選擇 main /root
+     - 儲存後等 1~2 分鐘，站點將會出現於 https://<你的帳號>.github.io/liangchen-site
+
+  4) 自訂品牌
+     - 將圖片替換為你的實際車輛／司機照片
+     - 修改頁首文字、服務內容、聯絡資訊
+     - 若需多頁：可再新增 about.html、policy.html… 並在導覽列連結
+
+  5) 隱私與合規
+     - 建議新增「隱私權政策」與「服務條款」頁面，說明資料用途與保存期
+
+  6) 進階
+     - 若需登入後查看個人歷史訂單，新增 Firestore 查詢並以表格顯示
+     - 若需後台管理，可改用 Vercel + Next.js（保留免費）或用 Cloudflare Pages Functions
+  ===================================================== -->
+</body>
+</html>
