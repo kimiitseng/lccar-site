@@ -149,14 +149,49 @@
       <p class="mt-2 text-slate-600">登入後可管理個人資料，預約時自動帶入姓名與電話。</p>
 
       <div id="authBox" class="mt-6 p-6 border rounded-xl bg-white card">
-        <div id="authed" class="hidden-important">$1
+        <div id="authed" class="hidden-important">
+          <p class="text-sm text-slate-600">已登入帳號：<span id="userEmail" class="font-medium"></span></p>
+
+          <!-- 會員基本資料 -->
+          <form id="profileForm" class="mt-4 grid md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium">姓名</label>
+              <input id="pf_name" class="mt-1 w-full border rounded-lg px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium">手機</label>
+              <input id="pf_phone" class="mt-1 w-full border rounded-lg px-3 py-2" />
+            </div>
+            <div class="md:col-span-2 flex items-center gap-3">
+              <button class="px-4 py-2 rounded-lg bg-slate-900 text-white" type="submit">儲存資料</button>
+              <span id="pf_status" class="text-sm text-slate-600"></span>
+            </div>
+          </form>
 
           <!-- 歷次訂單 -->
-          <div id="ordersBox" class="mt-8">$1</div>
+          <div id="ordersBox" class="mt-8">
+            <h3 class="font-semibold mb-2">我的訂單紀錄</h3>
+            <p class="text-sm text-slate-600 mb-3">僅顯示登入帳號所建立、且有綁定會員的訂單。</p>
+            <div class="overflow-x-auto border rounded-lg">
+              <table class="min-w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left">建立時間</th>
+                    <th class="px-3 py-2 text-left">行程</th>
+                    <th class="px-3 py-2 text-left">人數</th>
+                    <th class="px-3 py-2 text-left">備註</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersBody">
+                  <tr id="ordersEmpty"><td colspan="4" class="px-3 py-4 text-slate-500">目前沒有訂單資料。</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-          <!-- 司機 / 後台管理 -->
+          <!-- 司機 / 管理員 -->
           <div id="roleBoxes" class="mt-10 space-y-10">
-            <!-- 司機視窗：顯示被指派的行程 -->
+            <!-- 司機視窗 -->
             <div id="driverBox" class="hidden-important">
               <h3 class="font-semibold mb-2">我被指派的行程</h3>
               <div class="overflow-x-auto border rounded-lg">
@@ -177,7 +212,7 @@
               </div>
             </div>
 
-            <!-- 管理員後台：指派與外部訂單匯入 -->
+            <!-- 管理員後台 -->
             <div id="adminBox" class="hidden-important">
               <h3 class="font-semibold mb-2">管理員後台</h3>
               <p class="text-sm text-slate-600">你可以：A) 指派既有訂單給司機、B) 匯入非官網訂單。</p>
@@ -205,7 +240,7 @@
                 </div>
               </div>
 
-              <!-- B) 匯入外部訂單（非官網） -->
+              <!-- B) 匯入外部訂單 -->
               <div class="mt-6 p-4 border rounded-lg bg-slate-50">
                 <h4 class="font-semibold">匯入外部訂單</h4>
                 <form id="importForm" class="grid md:grid-cols-2 gap-4">
@@ -227,6 +262,7 @@
           </div>
         </div>
 
+        <!-- 未登入 -->
         <div id="anon">
           <p class="text-sm text-slate-600">未登入狀態：可瀏覽網站，登入後即可建立會員資料與快速預約。</p>
           <div class="mt-4 grid md:grid-cols-2 gap-4">
@@ -259,44 +295,36 @@
 
   <!-- ===================== Firebase：請填入你的專案設定 ===================== -->
   <script type="module">
-    // 1) 將以下 config 替換為你的 Firebase 專案設定
-    //    取得方式：Firebase Console → 專案設定 → 一般 → 你的應用程式（Web）
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    // ========= 你的 Firebase 設定（已填你的專案） =========
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5wkBK3b_-6on4QkYzfKLrpCJu6JN5Pzo",
+      authDomain: "lccar-web.firebaseapp.com",
+      projectId: "lccar-web",
+      storageBucket: "lccar-web.appspot.com", // ← 已修正
+      messagingSenderId: "703958495491",
+      appId: "1:703958495491:web:a5715c449315991afb7936",
+      measurementId: "G-HF8R7BPV7N"
+    };
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA5wkBK3b_-6on4QkYzfKLrpCJu6JN5Pzo",
-  authDomain: "lccar-web.firebaseapp.com",
-  projectId: "lccar-web",
-  storageBucket: "lccar-web.firebasestorage.com",
-  messagingSenderId: "703958495491",
-  appId: "1:703958495491:web:a5715c449315991afb7936",
-  measurementId: "G-HF8R7BPV7N"
-};
+    // ========= Make Webhook（可選）：貼你的 URL =========
+    const MAKE_WEBHOOK_URL = "__YOUR_MAKE_WEBHOOK_URL__"; // 例如：https://hook.eu1.make.com/xxxx
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-    // 2) Make (Integromat) Webhook：用來即時通知 LINE 或其他系統
-    //    將下列 URL 改成你的 Make Webhook 位址（例如：https://hook.eu1.make.com/xxxxxxx）
-    const MAKE_WEBHOOK_URL = "__YOUR_MAKE_WEBHOOK_URL__";
-
-    // ========== Firebase SDK 初始化 ==========
+    // ========= 載入 Firebase（CDN 版） =========
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, addDoc, collection, query, where, orderBy, limit, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut,
+      createUserWithEmailAndPassword, signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, serverTimestamp, addDoc, collection,
+      query, where, orderBy, limit, getDocs, updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ========== DOM 快捷 ==========
+    // ========= DOM 快捷 =========
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => document.querySelectorAll(sel);
 
@@ -307,25 +335,21 @@ const analytics = getAnalytics(app);
     function show(el){ el.classList.remove('hidden-important'); }
     function hide(el){ el.classList.add('hidden-important'); }
 
-    // ========== 登入邏輯 ==========
+    // ========= 登入邏輯 =========
     async function signInWithGoogle(){
-      try {
-        await signInWithPopup(auth, new GoogleAuthProvider());
-      } catch (e){ alert(e.message); }
+      try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+      catch (e){ alert(e.message); }
     }
 
     async function emailLoginOrRegister(email, pass){
       try{
-        // 先嘗試登入，失敗再註冊
         await signInWithEmailAndPassword(auth, email, pass);
         return 'login';
       }catch(err){
         if(err.code === 'auth/user-not-found'){
           await createUserWithEmailAndPassword(auth, email, pass);
           return 'register';
-        } else {
-          throw err;
-        }
+        } else { throw err; }
       }
     }
 
@@ -350,9 +374,11 @@ const analytics = getAnalytics(app);
       const logout = $('#btn-logout');
       const adminBox = document.querySelector('#adminBox');
       const driverBox = document.querySelector('#driverBox');
+
       if(user){
         $('#userEmail').textContent = user.email || '(未提供)';
         show(authed); hide(anon); logout.classList.remove('hidden');
+
         // 讀取角色與個資
         const profRef = doc(db, 'members', user.uid);
         const profSnap = await getDoc(profRef);
@@ -365,6 +391,7 @@ const analytics = getAnalytics(app);
           $('#bk_name').value  = d.name  || '';
           $('#bk_phone').value = d.phone || '';
         }
+
         // 顯示角色視圖
         hide(adminBox); hide(driverBox);
         if(role === 'admin'){
@@ -374,6 +401,7 @@ const analytics = getAnalytics(app);
           show(driverBox);
           await renderJobsForDriver(user.uid);
         }
+
         // 會員歷史訂單
         await loadBookings(user.uid);
       } else {
@@ -399,13 +427,13 @@ const analytics = getAnalytics(app);
       try{
         await setDoc(doc(db,'members',user.uid), payload, { merge:true });
         s.textContent = '已儲存';
-        // 同步到預約表單欄位
+        // 帶入預約表單欄位
         $('#bk_name').value  = payload.name;
         $('#bk_phone').value = payload.phone;
       }catch(err){ s.textContent = err.message; }
     });
 
-    // ========== 預約送出 ==========
+    // ========= 預約送出 =========
     $('#bookingForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
       const user = auth.currentUser; // 可選
@@ -423,7 +451,6 @@ const analytics = getAnalytics(app);
         source: 'lc-site'
       };
 
-      // 前端驗證
       if(!booking.name || !booking.phone || !booking.datetime || !booking.from || !booking.to){
         return alert('請完整填寫必填欄位');
       }
@@ -432,17 +459,19 @@ const analytics = getAnalytics(app);
       status.textContent = '送出中…';
 
       try{
-        // 1) 寫入 Firestore（bookings 集合）
+        // 1) 寫入 Firestore
         await addDoc(collection(db,'bookings'), booking);
 
-        // 2) 透過 Make Webhook 即時通知（可串 LINE 群組）
+        // 2) 透過 Make Webhook 即時通知
         if(MAKE_WEBHOOK_URL && MAKE_WEBHOOK_URL.startsWith('http')){
-          const res = await fetch(MAKE_WEBHOOK_URL, {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json' },
-            body: JSON.stringify(booking)
-          });
-          if(!res.ok){ console.warn('Webhook 回應非 2xx', res.status); }
+          try{
+            const res = await fetch(MAKE_WEBHOOK_URL, {
+              method:'POST',
+              headers:{ 'Content-Type':'application/json' },
+              body: JSON.stringify(booking)
+            });
+            if(!res.ok){ console.warn('Webhook 回應非 2xx', res.status); }
+          }catch(err){ console.warn('Webhook 失敗：', err.message); }
         }
 
         status.textContent = '預約已送出，我們將盡快與您聯繫。';
@@ -452,26 +481,24 @@ const analytics = getAnalytics(app);
         status.textContent = '送出失敗：' + err.message;
       }
     });
-  // ========== 角色／資料查詢函式 ==========
+
+    // ========= 角色／資料查詢 =========
     async function loadDrivers(){
       const sel = document.querySelector('#im_driver');
-      const assignSelects = document.querySelectorAll('.assignDriverSelect');
       if(sel) sel.innerHTML = '';
       const qy = query(collection(db,'members'), where('role','==','driver'), orderBy('name'));
       const snap = await getDocs(qy);
       const drivers = [];
       snap.forEach(d=>{ drivers.push({ uid:d.id, ...d.data() }); });
-      // 填入匯入表單選單
       if(sel){
         sel.appendChild(new Option('（可選）指派司機',''));
         drivers.forEach(dr=> sel.appendChild(new Option(`${dr.name||dr.email||dr.uid}`, dr.uid)) );
       }
-      // 同步到管理指派區塊會動態建立
       window.__drivers = drivers;
       return drivers;
     }
 
-    // ========== 查詢登入者的訂單 ==========
+    // ========= 查詢登入者的訂單 =========
     function formatDate(ts){
       if(!ts) return '';
       try{
@@ -502,20 +529,21 @@ const analytics = getAnalytics(app);
           const b = docu.data();
           const when = formatDate(b.createdAt);
           const route = `${b.from||''} → ${b.to||''}`;
-          rows += `<tr class=\"border-t\">
-            <td class=\"px-3 py-2 whitespace-nowrap\">${when}</td>
-            <td class=\"px-3 py-2\">${route}</td>
-            <td class=\"px-3 py-2\">${b.pax||''}</td>
-            <td class=\"px-3 py-2 truncate max-w-[24ch]\" title=\"${b.note||''}\">${b.note||''}</td>
+          rows += `<tr class="border-t">
+            <td class="px-3 py-2 whitespace-nowrap">${when}</td>
+            <td class="px-3 py-2">${route}</td>
+            <td class="px-3 py-2">${b.pax||''}</td>
+            <td class="px-3 py-2 truncate max-w-[24ch]" title="${b.note||''}">${b.note||''}</td>
           </tr>`;
         });
         body.innerHTML = rows;
       }catch(err){
         console.error(err);
-        body.innerHTML = `<tr><td colspan=\"4\" class=\"px-3 py-4 text-rose-600\">讀取失敗：${err.message}<br/><span class='text-xs text-slate-500'>若提示索引（index）需求，請依 Firestore 主控台連結建立複合索引：條件 uid==，排序 createdAt desc。</span></td></tr>`;
+        body.innerHTML = `<tr><td colspan="4" class="px-3 py-4 text-rose-600">讀取失敗：${err.message}<br/><span class='text-xs text-slate-500'>若提示索引需求，請依訊息連結建立複合索引（條件 uid==，排序 createdAt desc）。</span></td></tr>`;
       }
     }
-  // ========== 司機端：載入被指派的行程 ==========
+
+    // ========= 司機端：被指派的行程 =========
     async function renderJobsForDriver(uid){
       const body = document.querySelector('#driverJobsBody');
       if(!body) return;
@@ -532,22 +560,22 @@ const analytics = getAnalytics(app);
         let rows = '';
         snap.forEach(docu=>{
           const b = docu.data();
-          rows += `<tr class=\"border-t\">
-            <td class=\"px-3 py-2 whitespace-nowrap\">${b.datetime||''}</td>
-            <td class=\"px-3 py-2\">${(b.from||'') + ' → ' + (b.to||'')}</td>
-            <td class=\"px-3 py-2\">${b.name||''} / ${b.phone||''}</td>
-            <td class=\"px-3 py-2\">${b.pax||''}</td>
-            <td class=\"px-3 py-2 truncate max-w-[24ch]\" title=\"${b.note||''}\">${b.note||''}</td>
+          rows += `<tr class="border-t">
+            <td class="px-3 py-2 whitespace-nowrap">${b.datetime||''}</td>
+            <td class="px-3 py-2">${(b.from||'') + ' → ' + (b.to||'')}</td>
+            <td class="px-3 py-2">${b.name||''} / ${b.phone||''}</td>
+            <td class="px-3 py-2">${b.pax||''}</td>
+            <td class="px-3 py-2 truncate max-w-[24ch]" title="${b.note||''}">${b.note||''}</td>
           </tr>`;
         });
         body.innerHTML = rows;
       }catch(err){
         console.error(err);
-        body.innerHTML = `<tr><td colspan=\"5\" class=\"px-3 py-4 text-rose-600\">讀取失敗：${err.message}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-rose-600">讀取失敗：${err.message}</td></tr>`;
       }
     }
 
-    // ========== 管理端：渲染可指派清單 ==========
+    // ========= 管理端：渲染可指派清單 =========
     async function renderBookingsForAdmin(){
       const body = document.querySelector('#adminAssignBody');
       if(!body) return;
@@ -563,18 +591,20 @@ const analytics = getAnalytics(app);
           const id = docu.id;
           const when = (b.createdAt && b.createdAt.toDate) ? b.createdAt.toDate().toLocaleString() : '';
           const current = b.assignedDriverUid || '';
-          const options = ['<option value="">未指派</option>'].concat(drivers.map(dr=>`<option value="${dr.uid}" ${current===dr.uid?'selected':''}>${dr.name||dr.email||dr.uid}</option>`)).join('');
-          rows += `<tr class=\"border-t\">
-            <td class=\"px-3 py-2\">${when}</td>
-            <td class=\"px-3 py-2\">${(b.from||'') + ' → ' + (b.to||'')}</td>
-            <td class=\"px-3 py-2\">${b.name||''} / ${b.phone||''}</td>
-            <td class=\"px-3 py-2\">${b.pax||''}</td>
-            <td class=\"px-3 py-2\"><select class=\"assignSel border rounded px-2 py-1\" data-id=\"${id}\">${options}</select></td>
-            <td class=\"px-3 py-2\">${b.status||'—'}</td>
+          const options = ['<option value="">未指派</option>']
+            .concat(drivers.map(dr=>`<option value="${dr.uid}" ${current===dr.uid?'selected':''}>${dr.name||dr.email||dr.uid}</option>`))
+            .join('');
+          rows += `<tr class="border-t">
+            <td class="px-3 py-2">${when}</td>
+            <td class="px-3 py-2">${(b.from||'') + ' → ' + (b.to||'')}</td>
+            <td class="px-3 py-2">${b.name||''} / ${b.phone||''}</td>
+            <td class="px-3 py-2">${b.pax||''}</td>
+            <td class="px-3 py-2"><select class="assignSel border rounded px-2 py-1" data-id="${id}">${options}</select></td>
+            <td class="px-3 py-2">${b.status||'—'}</td>
           </tr>`;
         });
         body.innerHTML = rows;
-        // 綁定事件
+        // 綁定事件：變更指派
         body.querySelectorAll('.assignSel').forEach(sel=>{
           sel.addEventListener('change', async (e)=>{
             const id = e.target.getAttribute('data-id');
@@ -585,11 +615,11 @@ const analytics = getAnalytics(app);
         });
       }catch(err){
         console.error(err);
-        body.innerHTML = `<tr><td colspan=\"6\" class=\"px-3 py-4 text-rose-600\">讀取失敗：${err.message}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="6" class="px-3 py-4 text-rose-600">讀取失敗：${err.message}</td></tr>`;
       }
     }
 
-    // ========== 管理端：匯入外部訂單 ==========
+    // ========= 管理端：匯入外部訂單 =========
     document.addEventListener('submit', async (e)=>{
       if(e.target && e.target.id === 'importForm'){
         e.preventDefault();
@@ -623,64 +653,37 @@ const analytics = getAnalytics(app);
   <!-- ===================== 使用說明（部署前請閱讀） =====================
   1) Firebase 設定
      - 到 https://console.firebase.google.com 建立專案
-     - 建立 Web App 並複製設定，貼到上方 firebaseConfig
+     - 建立 Web App 並複製設定，貼到上方 firebaseConfig（此檔已填入 lccar-web）
      - 啟用 Authentication：Email/Password 及 Google Provider
      - 建立 Cloud Firestore（Production 模式）並新增下列安全規則：
 
-       	// Firestore 規則（請到 Console > Firestore > 規則 貼上）
+        // Firestore 規則（請到 Console > Firestore > 規則 貼上）
         rules_version = '2';
         service cloud.firestore { match /databases/{database}/documents {
           function isAdmin(){
             return request.auth != null &&
                    get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'admin';
           }
-       	  match /members/{uid} {
-       	    allow read, write: if request.auth != null && request.auth.uid == uid;
-       	  }
-       	  match /bookings/{id} {
-       	    allow create: if true; // 允許匿名送單（可改為 request.auth != null）
-        // 僅允許讀取：自己的會員單、被指派給自己的單、或管理員
-        allow read: if (request.auth != null && (resource.data.uid == request.auth.uid || resource.data.assignedDriverUid == request.auth.uid)) ||
-                     isAdmin();
-        // 允許管理員更新（例如指派司機、更新狀態），或司機更新自己的回報欄位
-        allow update: if isAdmin() || (request.auth != null && resource.data.assignedDriverUid == request.auth.uid);
-        allow delete: if false; // 預設不允許前端更改／刪除
-       	  }
-       	}}
+          match /members/{uid} {
+            allow read, write: if request.auth != null && request.auth.uid == uid || isAdmin();
+          }
+          match /bookings/{id} {
+            allow create: if true; // 允許匿名送單（可改為 request.auth != null）
+            // 僅允許讀取：自己的會員單、被指派給自己的單、或管理員
+            allow read: if (request.auth != null && (resource.data.uid == request.auth.uid || resource.data.assignedDriverUid == request.auth.uid)) || isAdmin();
+            // 允許管理員更新（例如指派司機、更新狀態），或司機更新自己的回報欄位
+            allow update: if isAdmin() || (request.auth != null && resource.data.assignedDriverUid == request.auth.uid);
+            allow delete: if false; // 預設不允許前端更改／刪除
+          }
+        }}
 
   2) 即時通知（Make → LINE 群組）
      - 在 Make 建立「Custom webhook」模組，複製 URL 貼到 MAKE_WEBHOOK_URL
-     - 後面串 LINE Messaging API「發送訊息」模組（用你現有的 Channel access token）
-     - 訊息內容範例：
-       {
-         "to": "<你的群組ID或使用 push/broadcast 模組>",
-         "messages": [
-           { "type": "text", "text":
-             "[新預約] " + bundle.name + " / " + bundle.phone + "\n" +
-             bundle.datetime + "\n" + bundle.from + " → " + bundle.to +
-             (bundle.note ? ("\n備註："+bundle.note) : "")
-           }
-         ]
-       }
-     - 或直接在 Make 裡組字串：只顯示有值的欄位（你之前的場景可沿用）
+     - 後面串 LINE Messaging API「發送訊息」模組（用你的 Channel access token）
+     - 訊息內容可用 webhook 的 JSON 欄位組字串（name/phone/datetime/from/to/note）
 
   3) 部署到 GitHub Pages（免費）
-     - 到 GitHub 建立 Repository，例如 liangchen-site
-     - 新增檔案 index.html（本檔案全部貼上）
-     - 進入 Settings → Pages → Branch 選擇 main /root
-     - 儲存後等 1~2 分鐘，站點將會出現於 https://<你的帳號>.github.io/liangchen-site
-
-  4) 自訂品牌
-     - 將圖片替換為你的實際車輛／司機照片
-     - 修改頁首文字、服務內容、聯絡資訊
-     - 若需多頁：可再新增 about.html、policy.html… 並在導覽列連結
-
-  5) 隱私與合規
-     - 建議新增「隱私權政策」與「服務條款」頁面，說明資料用途與保存期
-
-  6) 進階
-     - 若需登入後查看個人歷史訂單，新增 Firestore 查詢並以表格顯示
-     - 若需後台管理，可改用 Vercel + Next.js（保留免費）或用 Cloudflare Pages Functions
+     - 這個檔案直接放到 repo root，Pages 設定為 main /(root) 即可上線
   ===================================================== -->
 </body>
 </html>
