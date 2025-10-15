@@ -311,10 +311,8 @@
 
     // ========= 載入 Firebase（CDN 版） =========
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import {
-      getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut,
-      createUserWithEmailAndPassword, signInWithEmailAndPassword
-    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+
     import {
       getFirestore, doc, getDoc, setDoc, serverTimestamp, addDoc, collection,
       query, where, orderBy, limit, getDocs, updateDoc
@@ -342,10 +340,77 @@
     }
 
     async function emailLoginOrRegister(email, pass){
-      try{
-        await signInWithEmailAndPassword(auth, email, pass);
-        return 'login';
-      }catch(err){
+  try{
+    // 先嘗試登入
+    await signInWithEmailAndPassword(auth, email, pass);
+    return 'login';
+  }catch(err){
+    // 新版 SDK 多用 invalid-credential 表示密碼錯
+    if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      throw new Error('密碼不正確。若忘記密碼，請點下方「忘記密碼」。');
+    }
+    if (err.code === 'auth/user-not-found') {
+      // 帳號不存在 → 幫他自動註冊
+      await createUserWithEmailAndPassword(auth, email, pass);
+      return 'register';
+    }
+    if (err.code === 'auth/too-many-requests') {
+      throw new Error('嘗試次數過多，請稍後再試或改用 Google 登入。');
+    }
+    if (err.code === 'auth/invalid-email') {
+      throw new Error('Email 格式不正確。');
+    }
+    if (err.code === 'auth/email-already-in-use') {
+      // 通常代表此 email 曾用其他方式（如 Google）註冊
+      throw new Error('此 Email 已被使用。若你曾用 Google 登入，請改用「Google 登入」。');
+    }
+    // 其他狀況：回傳原始訊息方便排錯
+    throw new Error(err.message || '登入失敗');
+  }
+}
+
+$('#emailLoginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = $('#em_email').value.trim();
+  const pass  = $('#em_pass').value.trim();
+  const s = $('#em_status'); s.textContent = '處理中…';
+  try{
+    const mode = await emailLoginOrRegister(email, pass);
+    s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
+  }catch(err){
+    s.textContent = err.message;
+  }
+});
+
+// 忘記密碼（會寄信到輸入的 Email）
+const resetBtnId = 'btn-reset';
+if (!document.getElementById(resetBtnId)) {
+  const resetBtn = document.createElement('button');
+  resetBtn.id = resetBtnId;
+  resetBtn.type = 'button';
+  resetBtn.className = 'mt-2 text-sm underline';
+  resetBtn.textContent = '忘記密碼？點此寄送重設連結';
+  $('#emailLoginForm').appendChild(resetBtn);
+
+  resetBtn.addEventListener('click', async ()=>{
+    const email = $('#em_email').value.trim();
+    const s = $('#em_status');
+    if(!email){ s.textContent = '請先輸入 Email 再點忘記密碼。'; return; }
+    s.textContent = '寄送中…';
+    try{
+      await sendPasswordResetEmail(auth, email);
+      s.textContent = '已寄出重設密碼信，請到信箱查看。';
+    }catch(err){
+      // 若該 email 是用 Google 註冊，Firebase 可能不允許發送密碼重設
+      if (err.code === 'auth/user-not-found') {
+        s.textContent = '查無此 Email。若你是用 Google 登入，請改用 Google 按鈕登入。';
+      } else {
+        s.textContent = err.message;
+      }
+    }
+  });
+}
+catch(err){
         if(err.code === 'auth/user-not-found'){
           await createUserWithEmailAndPassword(auth, email, pass);
           return 'register';
