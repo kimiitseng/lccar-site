@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23000000'/%3E%3Ctext x='50' y='58' font-size='44' text-anchor='middle' fill='white' font-family='Arial' %3ELC%3C/text%3E%3C/svg%3E"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root{--brand:#0f172a} /* slate-900 */
+    :root{--brand:#0f172a}
     .glass{backdrop-filter: blur(10px); background: rgba(255,255,255,.08)}
     .card{border-radius:1rem; box-shadow:0 10px 25px rgba(0,0,0,.1)}
     .section{scroll-margin-top:96px}
@@ -270,7 +270,8 @@
               <h3 class="font-semibold">Email 登入/註冊</h3>
               <input id="em_email" type="email" required class="mt-2 w-full border rounded-lg px-3 py-2" placeholder="you@example.com" />
               <input id="em_pass" type="password" required class="mt-2 w-full border rounded-lg px-3 py-2" placeholder="密碼（新用戶會自動建立）" />
-              <button class="mt-3 px-4 py-2 rounded-lg bg-slate-900 text-white" type="submit">登入 / 註冊</button>
+              <!-- A) 改為一般按鈕 + id -->
+              <button id="btn-email-login" type="button" class="mt-3 px-4 py-2 rounded-lg bg-slate-900 text-white">登入 / 註冊</button>
               <p id="em_status" class="text-sm mt-2"></p>
             </form>
             <div class="p-4 border rounded-lg bg-slate-50">
@@ -295,24 +296,26 @@
 
   <!-- ===================== Firebase：請填入你的專案設定 ===================== -->
   <script type="module">
-    // ========= 你的 Firebase 設定（已填你的專案） =========
+    // ========= 你的 Firebase 設定 =========
     const firebaseConfig = {
       apiKey: "AIzaSyA5wkBK3b_-6on4QkYzfKLrpCJu6JN5Pzo",
       authDomain: "lccar-web.firebaseapp.com",
       projectId: "lccar-web",
-      storageBucket: "lccar-web.appspot.com", // ← 已修正
+      storageBucket: "lccar-web.appspot.com",
       messagingSenderId: "703958495491",
       appId: "1:703958495491:web:a5715c449315991afb7936",
       measurementId: "G-HF8R7BPV7N"
     };
 
-    // ========= Make Webhook（可選）：貼你的 URL =========
-    const MAKE_WEBHOOK_URL = "__YOUR_MAKE_WEBHOOK_URL__"; // 例如：https://hook.eu1.make.com/xxxx
+    // ========= Make Webhook（可選） =========
+    const MAKE_WEBHOOK_URL = "__YOUR_MAKE_WEBHOOK_URL__";
 
-    // ========= 載入 Firebase（CDN 版） =========
+    // ========= 載入 Firebase CDN =========
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-
+    import {
+      getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut,
+      createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
     import {
       getFirestore, doc, getDoc, setDoc, serverTimestamp, addDoc, collection,
       query, where, orderBy, limit, getDocs, updateDoc
@@ -324,7 +327,6 @@
 
     // ========= DOM 快捷 =========
     const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => document.querySelectorAll(sel);
 
     // 年份
     $('#year').textContent = new Date().getFullYear();
@@ -340,108 +342,91 @@
     }
 
     async function emailLoginOrRegister(email, pass){
-  try{
-    // 先嘗試登入
-    await signInWithEmailAndPassword(auth, email, pass);
-    return 'login';
-  }catch(err){
-    // 新版 SDK 多用 invalid-credential 表示密碼錯
-    if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-      throw new Error('密碼不正確。若忘記密碼，請點下方「忘記密碼」。');
-    }
-    if (err.code === 'auth/user-not-found') {
-      // 帳號不存在 → 幫他自動註冊
-      await createUserWithEmailAndPassword(auth, email, pass);
-      return 'register';
-    }
-    if (err.code === 'auth/too-many-requests') {
-      throw new Error('嘗試次數過多，請稍後再試或改用 Google 登入。');
-    }
-    if (err.code === 'auth/invalid-email') {
-      throw new Error('Email 格式不正確。');
-    }
-    if (err.code === 'auth/email-already-in-use') {
-      // 通常代表此 email 曾用其他方式（如 Google）註冊
-      throw new Error('此 Email 已被使用。若你曾用 Google 登入，請改用「Google 登入」。');
-    }
-    // 其他狀況：回傳原始訊息方便排錯
-    throw new Error(err.message || '登入失敗');
-  }
-}
-
-$('#emailLoginForm').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const email = $('#em_email').value.trim();
-  const pass  = $('#em_pass').value.trim();
-  const s = $('#em_status'); s.textContent = '處理中…';
-  try{
-    const mode = await emailLoginOrRegister(email, pass);
-    s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
-  }catch(err){
-    s.textContent = err.message;
-  }
-});
-
-// 忘記密碼（會寄信到輸入的 Email）
-const resetBtnId = 'btn-reset';
-if (!document.getElementById(resetBtnId)) {
-  const resetBtn = document.createElement('button');
-  resetBtn.id = resetBtnId;
-  resetBtn.type = 'button';
-  resetBtn.className = 'mt-2 text-sm underline';
-  resetBtn.textContent = '忘記密碼？點此寄送重設連結';
-  $('#emailLoginForm').appendChild(resetBtn);
-
-  resetBtn.addEventListener('click', async ()=>{
-    const email = $('#em_email').value.trim();
-    const s = $('#em_status');
-    if(!email){ s.textContent = '請先輸入 Email 再點忘記密碼。'; return; }
-    s.textContent = '寄送中…';
-    try{
-      await sendPasswordResetEmail(auth, email);
-      s.textContent = '已寄出重設密碼信，請到信箱查看。';
-    }catch(err){
-      // 若該 email 是用 Google 註冊，Firebase 可能不允許發送密碼重設
-      if (err.code === 'auth/user-not-found') {
-        s.textContent = '查無此 Email。若你是用 Google 登入，請改用 Google 按鈕登入。';
-      } else {
-        s.textContent = err.message;
-      }
-    }
-  });
-}
-catch(err){
-        if(err.code === 'auth/user-not-found'){
+      try{
+        // 先嘗試登入
+        await signInWithEmailAndPassword(auth, email, pass);
+        return 'login';
+      }catch(err){
+        if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+          throw new Error('密碼不正確。若忘記密碼，請點下方「忘記密碼」。');
+        }
+        if (err.code === 'auth/user-not-found') {
+          // 帳號不存在 → 自動註冊
           await createUserWithEmailAndPassword(auth, email, pass);
           return 'register';
-        } else { throw err; }
+        }
+        if (err.code === 'auth/too-many-requests') {
+          throw new Error('嘗試次數過多，請稍後再試或改用 Google 登入。');
+        }
+        if (err.code === 'auth/invalid-email') {
+          throw new Error('Email 格式不正確。');
+        }
+        if (err.code === 'auth/email-already-in-use') {
+          throw new Error('此 Email 已被使用。若你曾用 Google 登入，請改用「Google 登入」。');
+        }
+        throw new Error(err.message || '登入失敗');
       }
     }
 
-    $('#btn-google').addEventListener('click', signInWithGoogle);
-    $('#btn-google-2').addEventListener('click', signInWithGoogle);
-    $('#btn-logout').addEventListener('click', ()=>signOut(auth));
+    // Google 登入/登出
+    document.querySelector('#btn-google').addEventListener('click', signInWithGoogle);
+    document.querySelector('#btn-google-2').addEventListener('click', signInWithGoogle);
+    document.querySelector('#btn-logout').addEventListener('click', ()=>signOut(auth));
 
-    $('#emailLoginForm').addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const email = $('#em_email').value.trim();
-      const pass  = $('#em_pass').value.trim();
-      const s = $('#em_status'); s.textContent = '處理中…';
-      try{
-        const mode = await emailLoginOrRegister(email, pass);
-        s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
-      }catch(err){ s.textContent = err.message; }
-    });
+    // ===== B) 綁定 Email 登入按鈕（避免原生 submit 阻擋） =====
+    const emailBtn = document.querySelector('#btn-email-login');
+    if (emailBtn) {
+      emailBtn.addEventListener('click', async () => {
+        const email = $('#em_email').value.trim();
+        const pass  = $('#em_pass').value.trim();
+        const s = $('#em_status');
+        if (!email) { s.textContent = '請先輸入 Email'; return; }
+        if (!pass)  { s.textContent = '請先輸入密碼'; return; }
 
+        s.textContent = '處理中…';
+        try{
+          const mode = await emailLoginOrRegister(email, pass);
+          s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
+        }catch(err){
+          s.textContent = err.message || '登入失敗';
+        }
+      });
+
+      // 動態加入「忘記密碼」按鈕
+      const resetBtn = document.createElement('button');
+      resetBtn.type = 'button';
+      resetBtn.className = 'mt-2 text-sm underline';
+      resetBtn.textContent = '忘記密碼？點此寄送重設連結';
+      document.querySelector('#emailLoginForm').appendChild(resetBtn);
+
+      resetBtn.addEventListener('click', async ()=>{
+        const email = $('#em_email').value.trim();
+        const s = $('#em_status');
+        if(!email){ s.textContent = '請先輸入 Email 再點忘記密碼。'; return; }
+        s.textContent = '寄送中…';
+        try{
+          await sendPasswordResetEmail(auth, email);
+          s.textContent = '已寄出重設密碼信，請到信箱查看。';
+        }catch(err){
+          if (err.code === 'auth/user-not-found') {
+            s.textContent = '查無此 Email。若你是用 Google 登入，請改用 Google 按鈕登入。';
+          } else {
+            s.textContent = err.message;
+          }
+        }
+      });
+    }
+
+    // Auth 狀態切換
     onAuthStateChanged(auth, async (user)=>{
-      const authed = $('#authed');
-      const anon   = $('#anon');
-      const logout = $('#btn-logout');
+      const authed = document.querySelector('#authed');
+      const anon   = document.querySelector('#anon');
+      const logout = document.querySelector('#btn-logout');
       const adminBox = document.querySelector('#adminBox');
       const driverBox = document.querySelector('#driverBox');
 
       if(user){
-        $('#userEmail').textContent = user.email || '(未提供)';
+        document.querySelector('#userEmail').textContent = user.email || '(未提供)';
         show(authed); hide(anon); logout.classList.remove('hidden');
 
         // 讀取角色與個資
@@ -451,10 +436,10 @@ catch(err){
         if(profSnap.exists()){
           const d = profSnap.data();
           role = d.role || 'member';
-          $('#pf_name').value  = d.name  || '';
-          $('#pf_phone').value = d.phone || '';
-          $('#bk_name').value  = d.name  || '';
-          $('#bk_phone').value = d.phone || '';
+          document.querySelector('#pf_name').value  = d.name  || '';
+          document.querySelector('#pf_phone').value = d.phone || '';
+          document.querySelector('#bk_name').value  = d.name  || '';
+          document.querySelector('#bk_phone').value = d.phone || '';
         }
 
         // 顯示角色視圖
@@ -470,7 +455,7 @@ catch(err){
         // 會員歷史訂單
         await loadBookings(user.uid);
       } else {
-        hide($('#authed')); show($('#anon')); logout.classList.add('hidden');
+        hide(authed); show(anon); logout.classList.add('hidden');
         if(adminBox) hide(adminBox); if(driverBox) hide(driverBox);
         const body = document.querySelector('#ordersBody');
         if(body){ body.innerHTML = '<tr id="ordersEmpty"><td colspan="4" class="px-3 py-4 text-slate-500">目前沒有訂單資料。</td></tr>'; }
@@ -478,38 +463,37 @@ catch(err){
     });
 
     // 儲存會員資料
-    $('#profileForm').addEventListener('submit', async (e)=>{
+    document.querySelector('#profileForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
       const user = auth.currentUser; if(!user){ return alert('請先登入'); }
       const payload = {
-        name:  $('#pf_name').value.trim(),
-        phone: $('#pf_phone').value.trim(),
+        name:  document.querySelector('#pf_name').value.trim(),
+        phone: document.querySelector('#pf_phone').value.trim(),
         updatedAt: serverTimestamp(),
         email: user.email || null,
         uid: user.uid,
       };
-      const s = $('#pf_status'); s.textContent = '儲存中…';
+      const s = document.querySelector('#pf_status'); s.textContent = '儲存中…';
       try{
         await setDoc(doc(db,'members',user.uid), payload, { merge:true });
         s.textContent = '已儲存';
-        // 帶入預約表單欄位
-        $('#bk_name').value  = payload.name;
-        $('#bk_phone').value = payload.phone;
+        document.querySelector('#bk_name').value  = payload.name;
+        document.querySelector('#bk_phone').value = payload.phone;
       }catch(err){ s.textContent = err.message; }
     });
 
     // ========= 預約送出 =========
-    $('#bookingForm').addEventListener('submit', async (e)=>{
+    document.querySelector('#bookingForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
       const user = auth.currentUser; // 可選
       const booking = {
-        name: $('#bk_name').value.trim(),
-        phone: $('#bk_phone').value.trim(),
-        datetime: $('#bk_datetime').value,
-        pax: Number($('#bk_pax').value||1),
-        from: $('#bk_from').value.trim(),
-        to: $('#bk_to').value.trim(),
-        note: $('#bk_note').value.trim(),
+        name: document.querySelector('#bk_name').value.trim(),
+        phone: document.querySelector('#bk_phone').value.trim(),
+        datetime: document.querySelector('#bk_datetime').value,
+        pax: Number(document.querySelector('#bk_pax').value||1),
+        from: document.querySelector('#bk_from').value.trim(),
+        to: document.querySelector('#bk_to').value.trim(),
+        note: document.querySelector('#bk_note').value.trim(),
         uid: user? user.uid : null,
         email: user? (user.email||null) : null,
         createdAt: serverTimestamp(),
@@ -520,14 +504,14 @@ catch(err){
         return alert('請完整填寫必填欄位');
       }
 
-      const status = $('#bk_status');
+      const status = document.querySelector('#bk_status');
       status.textContent = '送出中…';
 
       try{
         // 1) 寫入 Firestore
         await addDoc(collection(db,'bookings'), booking);
 
-        // 2) 透過 Make Webhook 即時通知
+        // 2) Make Webhook（可選）
         if(MAKE_WEBHOOK_URL && MAKE_WEBHOOK_URL.startsWith('http')){
           try{
             const res = await fetch(MAKE_WEBHOOK_URL, {
@@ -669,7 +653,6 @@ catch(err){
           </tr>`;
         });
         body.innerHTML = rows;
-        // 綁定事件：變更指派
         body.querySelectorAll('.assignSel').forEach(sel=>{
           sel.addEventListener('change', async (e)=>{
             const id = e.target.getAttribute('data-id');
@@ -699,7 +682,7 @@ catch(err){
           to: document.querySelector('#im_to').value.trim(),
           note: document.querySelector('#im_note').value.trim(),
           assignedDriverUid: document.querySelector('#im_driver').value || null,
-          uid: null, // 非官網下單，不綁會員
+          uid: null,
           email: null,
           createdAt: serverTimestamp(),
           source: 'offline-import'
@@ -716,39 +699,15 @@ catch(err){
   </script>
 
   <!-- ===================== 使用說明（部署前請閱讀） =====================
-  1) Firebase 設定
-     - 到 https://console.firebase.google.com 建立專案
-     - 建立 Web App 並複製設定，貼到上方 firebaseConfig（此檔已填入 lccar-web）
-     - 啟用 Authentication：Email/Password 及 Google Provider
-     - 建立 Cloud Firestore（Production 模式）並新增下列安全規則：
+  1) 建好 Firestore 複合索引：
+     - bookings: uid Asc + createdAt Desc（會員紀錄）
+     - bookings: assignedDriverUid Asc + datetime Asc（司機行程）
+     - members: role Asc + name Asc（載入司機清單）
 
-        // Firestore 規則（請到 Console > Firestore > 規則 貼上）
-        rules_version = '2';
-        service cloud.firestore { match /databases/{database}/documents {
-          function isAdmin(){
-            return request.auth != null &&
-                   get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'admin';
-          }
-          match /members/{uid} {
-            allow read, write: if request.auth != null && request.auth.uid == uid || isAdmin();
-          }
-          match /bookings/{id} {
-            allow create: if true; // 允許匿名送單（可改為 request.auth != null）
-            // 僅允許讀取：自己的會員單、被指派給自己的單、或管理員
-            allow read: if (request.auth != null && (resource.data.uid == request.auth.uid || resource.data.assignedDriverUid == request.auth.uid)) || isAdmin();
-            // 允許管理員更新（例如指派司機、更新狀態），或司機更新自己的回報欄位
-            allow update: if isAdmin() || (request.auth != null && resource.data.assignedDriverUid == request.auth.uid);
-            allow delete: if false; // 預設不允許前端更改／刪除
-          }
-        }}
+  2) 即時通知（Make → LINE 群組）：
+     - 在 Make 建立 Custom webhook，URL 填到 MAKE_WEBHOOK_URL
 
-  2) 即時通知（Make → LINE 群組）
-     - 在 Make 建立「Custom webhook」模組，複製 URL 貼到 MAKE_WEBHOOK_URL
-     - 後面串 LINE Messaging API「發送訊息」模組（用你的 Channel access token）
-     - 訊息內容可用 webhook 的 JSON 欄位組字串（name/phone/datetime/from/to/note）
-
-  3) 部署到 GitHub Pages（免費）
-     - 這個檔案直接放到 repo root，Pages 設定為 main /(root) 即可上線
+  3) 部署：此檔放 repo root，GitHub Pages 設 main /(root)
   ===================================================== -->
 </body>
 </html>
