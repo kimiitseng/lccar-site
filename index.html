@@ -374,48 +374,80 @@
     document.querySelector('#btn-logout').addEventListener('click', ()=>signOut(auth));
 
     // ===== B) 綁定 Email 登入按鈕（避免原生 submit 阻擋） =====
-    const emailBtn = document.querySelector('#btn-email-login');
-    if (emailBtn) {
-      emailBtn.addEventListener('click', async () => {
-        const email = $('#em_email').value.trim();
-        const pass  = $('#em_pass').value.trim();
-        const s = $('#em_status');
-        if (!email) { s.textContent = '請先輸入 Email'; return; }
-        if (!pass)  { s.textContent = '請先輸入密碼'; return; }
+const emailBtn = document.querySelector('#btn-email-login');
+if (emailBtn) {
+  emailBtn.addEventListener('click', async () => {
+    const email = $('#em_email').value.trim();
+    const pass  = $('#em_pass').value.trim();
+    const s = $('#em_status');
 
-        s.textContent = '處理中…';
-        try{
-          const mode = await emailLoginOrRegister(email, pass);
-          s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
-        }catch(err){
-          s.textContent = err.message || '登入失敗';
-        }
-      });
+    // 重置訊息
+    s.textContent = '';
+    console.log('[login] click', { email });
 
-      // 動態加入「忘記密碼」按鈕
-      const resetBtn = document.createElement('button');
-      resetBtn.type = 'button';
-      resetBtn.className = 'mt-2 text-sm underline';
-      resetBtn.textContent = '忘記密碼？點此寄送重設連結';
-      document.querySelector('#emailLoginForm').appendChild(resetBtn);
+    // 基本檢查
+    if (!email) { s.textContent = '請先輸入 Email'; return; }
+    if (!pass)  { s.textContent = '請先輸入密碼（至少 6 碼）'; return; }
+    if (pass.length < 6) { s.textContent = '密碼至少需 6 碼'; return; }
 
-      resetBtn.addEventListener('click', async ()=>{
-        const email = $('#em_email').value.trim();
-        const s = $('#em_status');
-        if(!email){ s.textContent = '請先輸入 Email 再點忘記密碼。'; return; }
-        s.textContent = '寄送中…';
-        try{
-          await sendPasswordResetEmail(auth, email);
-          s.textContent = '已寄出重設密碼信，請到信箱查看。';
-        }catch(err){
-          if (err.code === 'auth/user-not-found') {
-            s.textContent = '查無此 Email。若你是用 Google 登入，請改用 Google 按鈕登入。';
-          } else {
-            s.textContent = err.message;
-          }
-        }
-      });
+    // 鎖按鈕避免重複點擊
+    emailBtn.disabled = true;
+    emailBtn.textContent = '處理中…';
+    s.textContent = '處理中…';
+
+    try {
+      const mode = await emailLoginOrRegister(email, pass);
+      s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
+      console.log('[login] success', mode);
+    } catch (err) {
+      console.error('[login] error', err);
+      // 更友善訊息
+      if (err.code === 'auth/weak-password') {
+        s.textContent = '密碼太弱，請至少 6 碼。';
+      } else if (err.code === 'auth/email-already-in-use') {
+        s.textContent = '此 Email 已被使用。若你曾用 Google 登入，請改用「Google 登入」。';
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+        s.textContent = '密碼不正確。若忘記密碼，請點下方「忘記密碼」。';
+      } else if (err.code === 'auth/network-request-failed') {
+        s.textContent = '網路連線異常，請稍後重試。';
+      } else {
+        s.textContent = err.message || '登入失敗';
+      }
+    } finally {
+      emailBtn.disabled = false;
+      emailBtn.textContent = '登入 / 註冊';
     }
+  });
+
+  // 動態加入「忘記密碼」按鈕（若尚未加入）
+  if (!document.getElementById('btn-reset')) {
+    const resetBtn = document.createElement('button');
+    resetBtn.id = 'btn-reset';
+    resetBtn.type = 'button';
+    resetBtn.className = 'mt-2 text-sm underline';
+    resetBtn.textContent = '忘記密碼？點此寄送重設連結';
+    document.querySelector('#emailLoginForm').appendChild(resetBtn);
+
+    resetBtn.addEventListener('click', async ()=>{
+      const email = $('#em_email').value.trim();
+      const s = $('#em_status');
+      if(!email){ s.textContent = '請先輸入 Email 再點忘記密碼。'; return; }
+      s.textContent = '寄送中…';
+      try{
+        await sendPasswordResetEmail(auth, email);
+        s.textContent = '已寄出重設密碼信，請到信箱查看。';
+      }catch(err){
+        console.error('[reset] error', err);
+        if (err.code === 'auth/user-not-found') {
+          s.textContent = '查無此 Email。若你是用 Google 登入，請改用 Google 按鈕登入。';
+        } else {
+          s.textContent = err.message || '寄送失敗';
+        }
+      }
+    });
+  }
+}
+
 
     // Auth 狀態切換
     onAuthStateChanged(auth, async (user)=>{
