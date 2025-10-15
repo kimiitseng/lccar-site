@@ -261,14 +261,27 @@
   <script type="module">
     // 1) 將以下 config 替換為你的 Firebase 專案設定
     //    取得方式：Firebase Console → 專案設定 → 一般 → 你的應用程式（Web）
-    const firebaseConfig = {
-      apiKey: "__YOUR_API_KEY__",
-      authDomain: "__YOUR_PROJECT_ID__.firebaseapp.com",
-      projectId: "__YOUR_PROJECT_ID__",
-      storageBucket: "__YOUR_PROJECT_ID__.appspot.com",
-      messagingSenderId: "__YOUR_SENDER_ID__",
-      appId: "__YOUR_APP_ID__",
-    };
+  // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyA5wkBK3b_-6on4QkYzfKLrpCJu6JN5Pzo",
+  authDomain: "lccar-web.firebaseapp.com",
+  projectId: "lccar-web",
+  storageBucket: "lccar-web.firebasestorage.app",
+  messagingSenderId: "703958495491",
+  appId: "1:703958495491:web:a5715c449315991afb7936",
+  measurementId: "G-HF8R7BPV7N"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
     // 2) Make (Integromat) Webhook：用來即時通知 LINE 或其他系統
     //    將下列 URL 改成你的 Make Webhook 位址（例如：https://hook.eu1.make.com/xxxxxxx）
