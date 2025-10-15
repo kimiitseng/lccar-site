@@ -270,7 +270,6 @@
               <h3 class="font-semibold">Email 登入/註冊</h3>
               <input id="em_email" type="email" required class="mt-2 w-full border rounded-lg px-3 py-2" placeholder="you@example.com" />
               <input id="em_pass" type="password" required class="mt-2 w-full border rounded-lg px-3 py-2" placeholder="密碼（新用戶會自動建立）" />
-              <!-- A) 改為一般按鈕 + id -->
               <button id="btn-email-login" type="button" class="mt-3 px-4 py-2 rounded-lg bg-slate-900 text-white">登入 / 註冊</button>
               <p id="em_status" class="text-sm mt-2"></p>
             </form>
@@ -294,15 +293,9 @@
     </div>
   </footer>
 
-  <!-- ===================== Firebase：請填入你的專案設定 ===================== -->
+  <!-- ===================== Firebase 與站內腳本 ===================== -->
   <script type="module">
-    import {
-  getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
-  fetchSignInMethodsForEmail
-} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-
-    // ========= 你的 Firebase 設定 =========
+    // ========= Firebase 設定 =========
     const firebaseConfig = {
       apiKey: "AIzaSyA5wkBK3b_-6on4QkYzfKLrpCJu6JN5Pzo",
       authDomain: "lccar-web.firebaseapp.com",
@@ -313,14 +306,14 @@
       measurementId: "G-HF8R7BPV7N"
     };
 
-    // ========= Make Webhook（可選） =========
     const MAKE_WEBHOOK_URL = "__YOUR_MAKE_WEBHOOK_URL__";
 
-    // ========= 載入 Firebase CDN =========
+    // ========= 載入 Firebase（CDN 版，一次各自匯入，不重覆） =========
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
     import {
       getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut,
-      createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail
+      createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
+      fetchSignInMethodsForEmail
     } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
     import {
       getFirestore, doc, getDoc, setDoc, serverTimestamp, addDoc, collection,
@@ -331,13 +324,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ========= DOM 快捷 =========
+    // ========= DOM helper =========
     const $ = (sel) => document.querySelector(sel);
-
-    // 年份
     $('#year').textContent = new Date().getFullYear();
-
-    // 顯示/隱藏
     function show(el){ el.classList.remove('hidden-important'); }
     function hide(el){ el.classList.add('hidden-important'); }
 
@@ -347,156 +336,134 @@
       catch (e){ alert(e.message); }
     }
 
+    // 先查提供者，決定註冊/登入/提示用 Google
     async function emailLoginOrRegister(email, pass){
-  // 基本檢查
-  if (!email) throw new Error('請先輸入 Email');
-  if (!pass || pass.length < 6) throw new Error('密碼至少需 6 碼');
+      if (!email) throw new Error('請先輸入 Email');
+      if (!pass || pass.length < 6) throw new Error('密碼至少需 6 碼');
 
-  // 先查這個 Email 綁了哪些登入方式
-  let methods = [];
-  try {
-    methods = await fetchSignInMethodsForEmail(auth, email);
-    // methods 可能是：[]、['password']、['google.com']、或多個
-  } catch (err) {
-    console.error('[fetchSignInMethodsForEmail]', err);
-    throw new Error('查詢帳號狀態失敗，請稍後再試。');
-  }
-
-  // 1) 完全沒有註冊過 → 直接幫他註冊成「Email/密碼」
-  if (methods.length === 0) {
-    try {
-      await createUserWithEmailAndPassword(auth, email, pass);
-      return 'register';
-    } catch (err) {
-      console.error('[register]', err);
-      if (err.code === 'auth/weak-password') throw new Error('密碼太短，請至少 6 碼。');
-      if (err.code === 'auth/email-already-in-use') {
-        // 極少數 race condition（剛好別處註冊成功）
-        // 退回去用登入流程
-        methods = ['password'];
-      } else {
-        throw new Error(err.message || '註冊失敗');
+      let methods = [];
+      try {
+        methods = await fetchSignInMethodsForEmail(auth, email);
+      } catch (err) {
+        console.error('[fetchSignInMethodsForEmail]', err);
+        throw new Error('查詢帳號狀態失敗，請稍後再試。');
       }
-    }
-  }
 
-  // 2) 已經綁「Email/密碼」→ 走登入
-  if (methods.includes('password')) {
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      return 'login';
-    } catch (err) {
-      console.error('[login]', err);
-      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        throw new Error('密碼不正確。若忘記密碼，請點下方「忘記密碼」。');
-      }
-      if (err.code === 'auth/too-many-requests') {
-        throw new Error('嘗試過多，請稍後再試或改用 Google 登入。');
-      }
-      throw new Error(err.message || '登入失敗');
-    }
-  }
-
-  // 3) 沒有 password，但綁了 Google（或其他）→ 提示改用對應方式
-  if (methods.includes('google.com')) {
-    throw new Error('此 Email 曾用 Google 註冊，請改用「以 Google 登入」。');
-  }
-
-  // 其他第三方（很少見）
-  throw new Error('此 Email 已綁定其他登入方式：' + methods.join(', '));
-}
-
-    // Google 登入/登出
-    document.querySelector('#btn-google').addEventListener('click', signInWithGoogle);
-    document.querySelector('#btn-google-2').addEventListener('click', signInWithGoogle);
-    document.querySelector('#btn-logout').addEventListener('click', ()=>signOut(auth));
-
-    // ===== B) 綁定 Email 登入按鈕（避免原生 submit 阻擋） =====
-const emailBtn = document.querySelector('#btn-email-login');
-if (emailBtn) {
-  emailBtn.addEventListener('click', async () => {
-    const email = $('#em_email').value.trim();
-    const pass  = $('#em_pass').value.trim();
-    const s = $('#em_status');
-
-    // 重置訊息
-    s.textContent = '';
-    console.log('[login] click', { email });
-
-    // 基本檢查
-    if (!email) { s.textContent = '請先輸入 Email'; return; }
-    if (!pass)  { s.textContent = '請先輸入密碼（至少 6 碼）'; return; }
-    if (pass.length < 6) { s.textContent = '密碼至少需 6 碼'; return; }
-
-    // 鎖按鈕避免重複點擊
-    emailBtn.disabled = true;
-    emailBtn.textContent = '處理中…';
-    s.textContent = '處理中…';
-
-    try {
-      const mode = await emailLoginOrRegister(email, pass);
-      s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
-      console.log('[login] success', mode);
-    } catch (err) {
-      console.error('[login] error', err);
-      // 更友善訊息
-      if (err.code === 'auth/weak-password') {
-        s.textContent = '密碼太弱，請至少 6 碼。';
-      } else if (err.code === 'auth/email-already-in-use') {
-        s.textContent = '此 Email 已被使用。若你曾用 Google 登入，請改用「Google 登入」。';
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        s.textContent = '密碼不正確。若忘記密碼，請點下方「忘記密碼」。';
-      } else if (err.code === 'auth/network-request-failed') {
-        s.textContent = '網路連線異常，請稍後重試。';
-      } else {
-        s.textContent = err.message || '登入失敗';
-      }
-    } finally {
-      emailBtn.disabled = false;
-      emailBtn.textContent = '登入 / 註冊';
-    }
-  });
-
-  // 動態加入「忘記密碼」按鈕（若尚未加入）
-  if (!document.getElementById('btn-reset')) {
-    const resetBtn = document.createElement('button');
-    resetBtn.id = 'btn-reset';
-    resetBtn.type = 'button';
-    resetBtn.className = 'mt-2 text-sm underline';
-    resetBtn.textContent = '忘記密碼？點此寄送重設連結';
-    document.querySelector('#emailLoginForm').appendChild(resetBtn);
-
-    resetBtn.addEventListener('click', async ()=>{
-      const email = $('#em_email').value.trim();
-      const s = $('#em_status');
-      if(!email){ s.textContent = '請先輸入 Email 再點忘記密碼。'; return; }
-      s.textContent = '寄送中…';
-      try{
-        await sendPasswordResetEmail(auth, email);
-        s.textContent = '已寄出重設密碼信，請到信箱查看。';
-      }catch(err){
-        console.error('[reset] error', err);
-        if (err.code === 'auth/user-not-found') {
-          s.textContent = '查無此 Email。若你是用 Google 登入，請改用 Google 按鈕登入。';
-        } else {
-          s.textContent = err.message || '寄送失敗';
+      // 未註冊 → 直接建立 Email/密碼帳號
+      if (methods.length === 0) {
+        try {
+          await createUserWithEmailAndPassword(auth, email, pass);
+          return 'register';
+        } catch (err) {
+          console.error('[register]', err);
+          if (err.code === 'auth/weak-password') throw new Error('密碼太短，請至少 6 碼。');
+          if (err.code === 'auth/email-already-in-use') {
+            methods = ['password']; // 罕見競態，改走登入
+          } else {
+            throw new Error(err.message || '註冊失敗');
+          }
         }
       }
-    });
-  }
-}
 
+      // 已有 password → 登入
+      if (methods.includes('password')) {
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+          return 'login';
+        } catch (err) {
+          console.error('[login]', err);
+          if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+            throw new Error('密碼不正確。若忘記密碼，請點下方「忘記密碼」。');
+          }
+          if (err.code === 'auth/too-many-requests') {
+            throw new Error('嘗試過多，請稍後再試或改用 Google 登入。');
+          }
+          throw new Error(err.message || '登入失敗');
+        }
+      }
+
+      // 沒有 password，但綁了 Google
+      if (methods.includes('google.com')) {
+        throw new Error('此 Email 曾用 Google 註冊，請改用「以 Google 登入」。');
+      }
+
+      throw new Error('此 Email 已綁定其他登入方式：' + methods.join(', '));
+    }
+
+    // 綁定按鈕
+    $('#btn-google').addEventListener('click', signInWithGoogle);
+    $('#btn-google-2').addEventListener('click', signInWithGoogle);
+    $('#btn-logout').addEventListener('click', ()=>signOut(auth));
+
+    // Email 登入按鈕：避免原生 submit
+    const emailBtn = $('#btn-email-login');
+    if (emailBtn) {
+      emailBtn.addEventListener('click', async () => {
+        const email = $('#em_email').value.trim();
+        const pass  = $('#em_pass').value.trim();
+        const s = $('#em_status');
+        s.textContent = '';
+
+        if (!email){ s.textContent = '請先輸入 Email'; return; }
+        if (!pass){  s.textContent = '請先輸入密碼（至少 6 碼）'; return; }
+        if (pass.length < 6){ s.textContent = '密碼至少需 6 碼'; return; }
+
+        emailBtn.disabled = true;
+        emailBtn.textContent = '處理中…';
+        s.textContent = '處理中…';
+
+        try {
+          const mode = await emailLoginOrRegister(email, pass);
+          s.textContent = mode==='register' ? '註冊成功，已登入' : '登入成功';
+        } catch (err) {
+          console.error('[login] error', err);
+          if (err.code === 'auth/weak-password') s.textContent = '密碼太弱，請至少 6 碼。';
+          else if (err.code === 'auth/email-already-in-use') s.textContent = '此 Email 已被使用。若曾用 Google 登入，請改用「Google 登入」。';
+          else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') s.textContent = '密碼不正確。若忘記密碼，請點下方「忘記密碼」。';
+          else if (err.code === 'auth/network-request-failed') s.textContent = '網路連線異常，請稍後重試。';
+          else s.textContent = err.message || '登入失敗';
+        } finally {
+          emailBtn.disabled = false;
+          emailBtn.textContent = '登入 / 註冊';
+        }
+      });
+
+      // 忘記密碼按鈕（動態加入一次）
+      if (!document.getElementById('btn-reset')) {
+        const resetBtn = document.createElement('button');
+        resetBtn.id = 'btn-reset';
+        resetBtn.type = 'button';
+        resetBtn.className = 'mt-2 text-sm underline';
+        resetBtn.textContent = '忘記密碼？點此寄送重設連結';
+        $('#emailLoginForm').appendChild(resetBtn);
+
+        resetBtn.addEventListener('click', async ()=>{
+          const email = $('#em_email').value.trim();
+          const s = $('#em_status');
+          if(!email){ s.textContent = '請先輸入 Email 再點忘記密碼。'; return; }
+          s.textContent = '寄送中…';
+          try{
+            await sendPasswordResetEmail(auth, email);
+            s.textContent = '已寄出重設密碼信，請到信箱查看。';
+          }catch(err){
+            console.error('[reset] error', err);
+            if (err.code === 'auth/user-not-found') s.textContent = '查無此 Email。若你是用 Google 登入，請改用 Google 按鈕登入。';
+            else s.textContent = err.message || '寄送失敗';
+          }
+        });
+      }
+    }
 
     // Auth 狀態切換
     onAuthStateChanged(auth, async (user)=>{
-      const authed = document.querySelector('#authed');
-      const anon   = document.querySelector('#anon');
-      const logout = document.querySelector('#btn-logout');
-      const adminBox = document.querySelector('#adminBox');
-      const driverBox = document.querySelector('#driverBox');
+      const authed = $('#authed');
+      const anon   = $('#anon');
+      const logout = $('#btn-logout');
+      const adminBox = $('#adminBox');
+      const driverBox = $('#driverBox');
 
       if(user){
-        document.querySelector('#userEmail').textContent = user.email || '(未提供)';
+        $('#userEmail').textContent = user.email || '(未提供)';
         show(authed); hide(anon); logout.classList.remove('hidden');
 
         // 讀取角色與個資
@@ -506,64 +473,70 @@ if (emailBtn) {
         if(profSnap.exists()){
           const d = profSnap.data();
           role = d.role || 'member';
-          document.querySelector('#pf_name').value  = d.name  || '';
-          document.querySelector('#pf_phone').value = d.phone || '';
-          document.querySelector('#bk_name').value  = d.name  || '';
-          document.querySelector('#bk_phone').value = d.phone || '';
+          $('#pf_name').value  = d.name  || '';
+          $('#pf_phone').value = d.phone || '';
+          $('#bk_name').value  = d.name  || '';
+          $('#bk_phone').value = d.phone || '';
         }
 
         // 顯示角色視圖
-        hide(adminBox); hide(driverBox);
+        if (adminBox) hide(adminBox);
+        if (driverBox) hide(driverBox);
         if(role === 'admin'){
-          show(adminBox);
-          await Promise.all([loadDrivers(), renderBookingsForAdmin()]);
+          if (adminBox) {
+            show(adminBox);
+            await Promise.all([loadDrivers(), renderBookingsForAdmin()]);
+          }
         } else if(role === 'driver'){
-          show(driverBox);
-          await renderJobsForDriver(user.uid);
+          if (driverBox) {
+            show(driverBox);
+            await renderJobsForDriver(user.uid);
+          }
         }
 
         // 會員歷史訂單
         await loadBookings(user.uid);
       } else {
         hide(authed); show(anon); logout.classList.add('hidden');
-        if(adminBox) hide(adminBox); if(driverBox) hide(driverBox);
-        const body = document.querySelector('#ordersBody');
+        if(adminBox) hide(adminBox);
+        if(driverBox) hide(driverBox);
+        const body = $('#ordersBody');
         if(body){ body.innerHTML = '<tr id="ordersEmpty"><td colspan="4" class="px-3 py-4 text-slate-500">目前沒有訂單資料。</td></tr>'; }
       }
     });
 
     // 儲存會員資料
-    document.querySelector('#profileForm').addEventListener('submit', async (e)=>{
+    $('#profileForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
       const user = auth.currentUser; if(!user){ return alert('請先登入'); }
       const payload = {
-        name:  document.querySelector('#pf_name').value.trim(),
-        phone: document.querySelector('#pf_phone').value.trim(),
+        name:  $('#pf_name').value.trim(),
+        phone: $('#pf_phone').value.trim(),
         updatedAt: serverTimestamp(),
         email: user.email || null,
         uid: user.uid,
       };
-      const s = document.querySelector('#pf_status'); s.textContent = '儲存中…';
+      const s = $('#pf_status'); s.textContent = '儲存中…';
       try{
         await setDoc(doc(db,'members',user.uid), payload, { merge:true });
         s.textContent = '已儲存';
-        document.querySelector('#bk_name').value  = payload.name;
-        document.querySelector('#bk_phone').value = payload.phone;
+        $('#bk_name').value  = payload.name;
+        $('#bk_phone').value = payload.phone;
       }catch(err){ s.textContent = err.message; }
     });
 
     // ========= 預約送出 =========
-    document.querySelector('#bookingForm').addEventListener('submit', async (e)=>{
+    $('#bookingForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const user = auth.currentUser; // 可選
+      const user = auth.currentUser;
       const booking = {
-        name: document.querySelector('#bk_name').value.trim(),
-        phone: document.querySelector('#bk_phone').value.trim(),
-        datetime: document.querySelector('#bk_datetime').value,
-        pax: Number(document.querySelector('#bk_pax').value||1),
-        from: document.querySelector('#bk_from').value.trim(),
-        to: document.querySelector('#bk_to').value.trim(),
-        note: document.querySelector('#bk_note').value.trim(),
+        name: $('#bk_name').value.trim(),
+        phone: $('#bk_phone').value.trim(),
+        datetime: $('#bk_datetime').value,
+        pax: Number($('#bk_pax').value||1),
+        from: $('#bk_from').value.trim(),
+        to: $('#bk_to').value.trim(),
+        note: $('#bk_note').value.trim(),
         uid: user? user.uid : null,
         email: user? (user.email||null) : null,
         createdAt: serverTimestamp(),
@@ -574,14 +547,12 @@ if (emailBtn) {
         return alert('請完整填寫必填欄位');
       }
 
-      const status = document.querySelector('#bk_status');
+      const status = $('#bk_status');
       status.textContent = '送出中…';
 
       try{
-        // 1) 寫入 Firestore
         await addDoc(collection(db,'bookings'), booking);
 
-        // 2) Make Webhook（可選）
         if(MAKE_WEBHOOK_URL && MAKE_WEBHOOK_URL.startsWith('http')){
           try{
             const res = await fetch(MAKE_WEBHOOK_URL, {
@@ -603,7 +574,7 @@ if (emailBtn) {
 
     // ========= 角色／資料查詢 =========
     async function loadDrivers(){
-      const sel = document.querySelector('#im_driver');
+      const sel = $('#im_driver');
       if(sel) sel.innerHTML = '';
       const qy = query(collection(db,'members'), where('role','==','driver'), orderBy('name'));
       const snap = await getDocs(qy);
@@ -617,7 +588,6 @@ if (emailBtn) {
       return drivers;
     }
 
-    // ========= 查詢登入者的訂單 =========
     function formatDate(ts){
       if(!ts) return '';
       try{
@@ -628,7 +598,7 @@ if (emailBtn) {
     }
 
     async function loadBookings(uid){
-      const body = document.querySelector('#ordersBody');
+      const body = $('#ordersBody');
       if(!body) return;
       body.innerHTML = '<tr><td colspan="4" class="px-3 py-4 text-slate-500">讀取中…</td></tr>';
       try{
@@ -662,9 +632,8 @@ if (emailBtn) {
       }
     }
 
-    // ========= 司機端：被指派的行程 =========
     async function renderJobsForDriver(uid){
-      const body = document.querySelector('#driverJobsBody');
+      const body = $('#driverJobsBody');
       if(!body) return;
       body.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-slate-500">讀取中…</td></tr>';
       try{
@@ -694,9 +663,8 @@ if (emailBtn) {
       }
     }
 
-    // ========= 管理端：渲染可指派清單 =========
     async function renderBookingsForAdmin(){
-      const body = document.querySelector('#adminAssignBody');
+      const body = $('#adminAssignBody');
       if(!body) return;
       body.innerHTML = '<tr><td colspan="6" class="px-3 py-4 text-slate-500">讀取中…</td></tr>';
       try{
@@ -736,36 +704,6 @@ if (emailBtn) {
         body.innerHTML = `<tr><td colspan="6" class="px-3 py-4 text-rose-600">讀取失敗：${err.message}</td></tr>`;
       }
     }
-
-    // ========= 管理端：匯入外部訂單 =========
-    document.addEventListener('submit', async (e)=>{
-      if(e.target && e.target.id === 'importForm'){
-        e.preventDefault();
-        const user = auth.currentUser;
-        if(!user){ return alert('請先以管理員帳號登入'); }
-        const booking = {
-          name: document.querySelector('#im_name').value.trim(),
-          phone: document.querySelector('#im_phone').value.trim(),
-          datetime: document.querySelector('#im_datetime').value,
-          pax: Number(document.querySelector('#im_pax').value||1),
-          from: document.querySelector('#im_from').value.trim(),
-          to: document.querySelector('#im_to').value.trim(),
-          note: document.querySelector('#im_note').value.trim(),
-          assignedDriverUid: document.querySelector('#im_driver').value || null,
-          uid: null,
-          email: null,
-          createdAt: serverTimestamp(),
-          source: 'offline-import'
-        };
-        const s = document.querySelector('#im_status'); s.textContent = '建立中…';
-        try{
-          await addDoc(collection(db,'bookings'), booking);
-          s.textContent = '已建立並指派';
-          (e.target).reset();
-          await renderBookingsForAdmin();
-        }catch(err){ s.textContent = '失敗：'+err.message; }
-      }
-    });
   </script>
 
   <!-- ===================== 使用說明（部署前請閱讀） =====================
